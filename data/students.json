@@ -1,0 +1,104 @@
+{
+  "profiles": {
+    "demo1": {
+      "nickname": "demo1",
+      "fullName": "Arta Shembull",
+      "createdAt": "2026-11-08T00:00:00.000Z",
+      "state": {
+        "c": {},
+        "d": {},
+        "t": {},
+        "u": {},
+        "q": {},
+        "pxp": 0
+      }
+    },
+    "demo2": {
+      "nickname": "demo2",
+      "fullName": "Dion Shembull",
+      "createdAt": "2026-11-08T00:00:00.000Z",
+      "state": {
+        "c": {},
+        "d": {},
+        "t": {},
+        "u": {},
+        "q": {},
+        "pxp": 0
+      }
+    },
+    "zhica": {
+      "nickname": "zhica",
+      "fullName": "Valon Zuka",
+      "createdAt": "2026-11-08T17:49:01.825Z",
+      "state": {
+        "c": {
+          "lab-2-0": 1,
+          "lab-2-1": 1,
+          "lab-2-2": 1,
+          "lab-2-3": 1,
+          "lab-2-4": 1,
+          "lab-2-5": 1,
+          "lab-6-0": 1,
+          "lab-6-1": 1,
+          "lab-6-2": 1,
+          "lab-6-3": 1,
+          "lab-6-4": 1,
+          "lab-8-0": 1,
+          "lab-8-1": 1,
+          "lab-8-2": 1,
+          "lab-8-3": 1,
+          "lab-8-4": 1,
+          "lab-8-5": 1
+        },
+        "d": {
+          "lab-2": {
+            "xp": 20,
+            "s": 82
+          },
+          "lab-6": {
+            "xp": 25,
+            "s": 50
+          },
+          "lab-8": {
+            "xp": 25,
+            "s": 44
+          }
+        },
+        "t": {},
+        "u": {},
+        "q": {
+          "sim-lab-6": 3
+        },
+        "pxp": 38,
+        "os": "mac"
+      },
+      "updatedAt": "2026-11-08T22:30:48.990Z"
+    },
+    "test2": {
+      "nickname": "test2",
+      "fullName": "test test1",
+      "createdAt": "2026-11-08T17:55:47.025Z",
+      "state": {
+        "c": {
+          "lab-2-0": 1,
+          "lab-2-1": 1,
+          "lab-2-2": 1,
+          "lab-2-3": 1,
+          "lab-2-4": 1,
+          "lab-2-5": 1
+        },
+        "d": {
+          "lab-2": {
+            "xp": 20,
+            "s": 6
+          }
+        },
+        "t": {},
+        "u": {},
+        "q": {},
+        "pxp": 12
+      },
+      "updatedAt": "2026-11-08T17:56:00.985Z"
+    }
+  }
+}

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Udhëzuesit e laboratorëve · Blockchain Fundamentals</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light;
+--bg:#f8fafc;--surf:#fff;--ink:#0f172a;--mut:#475569;--line:#e2e8f0;--acc:#d97706;--accbg:#fef3c7;--teal:#0d9488;--code:#0f172a;--codeink:#e2e8f0;--warn:#fff1f2;--warnink:#9f1239}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#0b1220;--surf:#111b2e;--ink:#e2e8f0;--mut:#94a3b8;--line:#22304a;--acc:#f59e0b;--accbg:#3a2a07;--teal:#2dd4bf;--code:#050a14;--warn:#3b0f1a;--warnink:#fda4af}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#0b1220;--surf:#111b2e;--ink:#e2e8f0;--mut:#94a3b8;--line:#22304a;--acc:#f59e0b;--accbg:#3a2a07;--teal:#2dd4bf;--code:#050a14;--warn:#3b0f1a;--warnink:#fda4af}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+h1,h2,h3{font-family:Georgia,"Times New Roman",serif;line-height:1.2;margin:0}
+.wrap{display:grid;grid-template-columns:280px minmax(0,1fr);min-height:100vh}
+nav{position:sticky;top:0;align-self:start;height:100vh;overflow:auto;padding:28px 20px;border-right:1px solid var(--line)}
+nav h1{font-size:21px;margin-bottom:4px}nav p{margin:0 0 20px;color:var(--mut);font-size:15px}
+nav a{display:block;padding:10px 12px;margin-bottom:4px;border-radius:8px;color:var(--ink);text-decoration:none;border-left:4px solid transparent}
+nav a small{display:block;color:var(--mut);font-size:13px}
+nav a:hover{background:var(--surf)}nav a[aria-current]{background:var(--accbg);border-left-color:var(--acc)}
+nav a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.bar{height:5px;background:var(--line);border-radius:3px;margin-top:6px;overflow:hidden}.bar i{display:block;height:100%;background:var(--teal);width:0}
+main{padding:36px clamp(18px,5vw,56px) 80px;max-width:860px}
+main h2{font-size:clamp(26px,4vw,36px)}
+.goal{color:var(--mut);margin:8px 0 22px}
+.box{background:var(--surf);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:0 0 18px}
+.box b{display:block;margin-bottom:4px}.box ul{margin:0;padding-left:20px}
+.warn{background:var(--warn);color:var(--warnink);border-color:transparent}
+.step{display:grid;grid-template-columns:28px 1fr;gap:12px;padding:16px 0;border-top:1px solid var(--line)}
+.step input{width:22px;height:22px;margin-top:4px;accent-color:var(--teal)}
+.step h3{font-size:19px;font-family:system-ui,sans-serif;font-weight:650}
+.step.done h3{text-decoration:line-through;color:var(--mut)}
+.step p{margin:4px 0 0;color:var(--mut)}
+pre{position:relative;margin:12px 0 0;padding:14px 16px;background:var(--code);color:var(--codeink);border-radius:10px;overflow-x:auto;font:14px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+pre button{position:sticky;float:right;top:0;margin:-4px -6px 0 8px;padding:5px 11px;border:0;border-radius:6px;background:var(--acc);color:#0f172a;font:600 13px system-ui;cursor:pointer}
+.res,.fail{margin-top:20px}.res{border-left:4px solid var(--teal)}.fail{border-left:4px solid var(--acc)}
+.tools{display:flex;gap:10px;align-items:center;margin:0 0 16px;flex-wrap:wrap;color:var(--mut);font-size:15px}
+.tools button{padding:6px 12px;border:1px solid var(--line);background:var(--surf);color:var(--ink);border-radius:8px;cursor:pointer;font:inherit}
+.nav2{display:flex;justify-content:space-between;margin-top:32px;gap:12px}
+.nav2 a{color:var(--teal);font-weight:600;text-decoration:none}
+@media (max-width:820px){.wrap{display:block}nav{position:static;height:auto;border:0;border-bottom:1px solid var(--line);padding:18px 16px}
+nav #menu{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px}nav a{flex:0 0 auto;min-width:130px;border:1px solid var(--line);border-left-width:4px}}
+.me{margin:0 0 18px;font-size:15px}.me input,.box input{width:100%;padding:8px 10px;margin:6px 0;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit}
+.me button,.box button{margin:4px 6px 0 0;padding:6px 12px;border:1px solid var(--line);background:var(--surf);color:var(--ink);border-radius:8px;cursor:pointer;font:inherit}
+button[aria-pressed=true]{background:var(--accbg)!important;border-color:var(--acc)!important}
+.tm{font-variant-numeric:tabular-nums}
+.sim{background:var(--code);color:var(--codeink);border-radius:12px;padding:18px;margin:18px 0;border:1px solid var(--line)}
+.sim h3{font:700 18px system-ui;color:#f8fafc;margin:0 0 6px}.sim p{color:#cbd5e1;margin:5px 0 12px}
+.sim .screen{background:#050a14;border:1px solid #334155;border-radius:8px;padding:14px;min-height:88px;font:14px/1.6 ui-monospace,monospace;white-space:pre-wrap;color:#a7f3d0;margin:10px 0}
+.sim button{margin:4px 6px 4px 0;padding:8px 12px;border:1px solid #475569;border-radius:7px;background:#1e293b;color:#e2e8f0;font:inherit;cursor:pointer}
+.sim button:hover{border-color:#2dd4bf}.sim .feedback{min-height:26px;color:#fcd34d;font-weight:600}.sim .ok{color:#6ee7b7}
+.challenge-meta{font-size:13px;color:#94a3b8}
+/* Focused classroom interface */
+.step{grid-template-columns:1fr;position:relative;padding:18px 0}.step.locked .step-body{filter:blur(5px);opacity:.5;pointer-events:none;user-select:none}.step.locked:after{content:'🔒 Përfundo hapin paraprak për ta zhbllokuar';display:block;color:var(--mut);font-size:14px}.step.done .step-body{opacity:.7}.step.done h3{text-decoration:none;color:var(--teal)}
+.step-body{min-width:0}.step-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px}.done-btn{border:0!important;background:var(--teal)!important;color:#042f2e!important;font-weight:750!important;padding:9px 16px!important}.done-btn:disabled{opacity:.5;cursor:not-allowed}.help{margin:12px 0 0;padding:11px 13px;border:1px solid var(--line);border-radius:9px;background:var(--surf)}.help summary{cursor:pointer;font-weight:650;color:var(--teal)}.help p{margin:8px 0 0;color:var(--mut)}
+.timer-card{position:sticky;top:10px;z-index:2;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;padding:14px 18px;border:2px solid #f59e0b;background:var(--surf);border-radius:12px;box-shadow:0 5px 20px #d9770622;margin:16px 0}.timer-card strong{color:#b45309;font-size:18px}.timer-card .tm{font-size:22px;font-weight:800;color:var(--ink)}
+.challenge{margin:24px 0;background:var(--code);color:var(--codeink);border-radius:14px;padding:20px;border:1px solid #334155}.challenge h3{color:#f8fafc;font:700 20px system-ui;margin:0 0 5px}.challenge .q{margin:12px 0;color:#e2e8f0}.challenge .screen{white-space:pre-wrap;background:#050a14;padding:14px;border-radius:8px;color:#a7f3d0;font:14px/1.6 ui-monospace,monospace;min-height:80px}.challenge button{margin:5px 7px 5px 0;padding:9px 14px;border:1px solid #475569;border-radius:8px;background:#1e293b;color:#e2e8f0;font:inherit;cursor:pointer}.challenge button:hover{border-color:#2dd4bf}.challenge .feedback{min-height:26px;color:#fcd34d;font-weight:650}.challenge .feedback.ok{color:#6ee7b7}
+.xp-pop{position:fixed;right:24px;top:90px;z-index:20;background:#f59e0b;color:#431407;border-radius:999px;padding:12px 18px;font-weight:900;box-shadow:0 8px 30px #0004;animation:xpFloat 1.5s ease-out forwards;pointer-events:none}@keyframes xpFloat{0%{opacity:0;transform:translateY(20px) scale(.75)}20%{opacity:1;transform:translateY(0) scale(1.08)}75%{opacity:1}100%{opacity:0;transform:translateY(-38px) scale(1)}}
+.profile input{margin:4px 0 10px}.profile label{display:block;font-size:13px;font-weight:700}.profile .hint{display:block;color:var(--mut);font-size:12px;margin-top:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav aria-label="Laboratorët"><h1>Udhëzuesit e laboratorëve</h1><p>Blockchain Fundamentals</p><div id="me" class="me"></div><div id="menu"></div></nav>
+<main id="main" tabindex="-1"></main>
+</div>
+<script>
+const WARN="Përdor vetëm wallet testimi pa para reale. Seed phrase nuk ndahet me asnjë, as me ligjëruesin.";
+const SOL="// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\n";
+const LABS=[
+{id:"lab-2",m:25,x:10,s:2,t:"Instalimi i mjeteve",g:"Përgatit mjedisin për gjithë kursin.",w:1,need:["Laptop me internet","15 GB hapësirë të lirë"],
+steps:[["Instalo VS Code","Shkarko nga code.visualstudio.com dhe instalo me opsionet e paracaktuara."],
+["Instalo Node.js (LTS)","Shkarko versionin LTS nga nodejs.org. Pastaj hap {term} dhe verifiko.","node -v\nnpm -v"],
+["Instalo Git","Shkarko nga git-scm.com.{gitmac}","git --version"],
+["Instalo Python 3","Nga python.org. Do të të duhet në laboratorin e seancës 6.{pynote}","{py} --version"],
+["Instalo MetaMask","Vetëm nga metamask.io. Krijo wallet të ri testimi dhe shkruaj seed phrase në letër, offline."],
+["Hap Remix IDE","Shko te remix.ethereum.org. Punon në shfletues dhe është plani rezervë nëse diçka nuk instalohet."]],
+res:"Të gjitha komandat japin numër versioni dhe Remix hapet në shfletues.",fail:["Komanda nuk njihet: mbyll dhe rihap terminalin pas instalimit.","Windows: nëse bllokohet instalimi, provo si administrator.","Mos humb kohë: në çdo rast mund të punosh vetëm me Remix."]},
+{id:"lab-6",m:30,x:15,s:6,t:"Hash dhe Merkle në Python",g:"Ndërto një hash, një Merkle root dhe provo se ndryshimi i të dhënave ndryshon gjithçka.",need:["Python 3 i instaluar","Skedar i ri: hash.py"],
+steps:[["Hash i një teksti","Krijo hash.py me këtë kod dhe ekzekutoje me {py} hash.py.","import hashlib\n\ndef h(x):\n    return hashlib.sha256(x.encode()).hexdigest()\n\nprint(h(\"Blockchain\"))\nprint(h(\"blockchain\"))"],
+["Ndrysho një shkronjë","Krahaso dy hash-et. Sa shumë ndryshojnë? Kjo është efekti i ortekut."],
+["Ndërto Merkle root","Shto në fund të skedarit.","def merkle(txs):\n    level = [h(t) for t in txs]\n    while len(level) > 1:\n        if len(level) % 2:\n            level.append(level[-1])\n        level = [h(level[i] + level[i+1]) for i in range(0, len(level), 2)]\n    return level[0]\n\nprint(merkle([\"Tx1\", \"Tx2\", \"Tx3\", \"Tx4\"]))\nprint(merkle([\"Tx1\", \"Tx2\", \"Tx3\", \"TX4\"]))"],
+["Gjej një nonce (mini mining)","Provo derisa hash-i të fillojë me katër zero.","nonce = 0\nwhile not h(\"blockchain\" + str(nonce)).startswith(\"0000\"):\n    nonce += 1\nprint(nonce, h(\"blockchain\" + str(nonce)))"],
+["Analizo një transaksion real","Hap një transaksion në etherscan.io dhe shkruaj: from, to, value, gas, tarifa, statusi."]],
+res:"Dy root-e Merkle krejt të ndryshme, dhe një nonce që gjendet për disa sekonda.",fail:["Komanda python nuk njihet: në Mac përdor python3, në Windows rihap terminalin pas instalimit.","Gabim me thonjëza: kopjo kodin me butonin Copy."]},
+{id:"lab-8",m:25,x:15,s:8,t:"Bitcoin në testnet",g:"Merr coin testimi dhe dërgo një transaksion për të parë inputs, outputs dhe tarifën.",w:1,need:["Wallet Bitcoin që mbështet testnet (e jep ligjëruesi)","Link i faucet-it aktual nga ligjëruesi"],
+steps:[["Hap wallet-in në testnet","Zgjidh rrjetin testnet. Adresat e testnet fillojnë me tb1."],["Kopjo një adresë marrëse","Përdor butonin Receive."],["Merr coin nga faucet","Hap faucet-in që jep ligjëruesi, vendos adresën dhe kërko coin."],["Gjej transaksionin","Në mempool.space (versioni testnet) kërko adresën tënde dhe ndiq konfirmimet."],["Dërgo një pjesë mbrapsht","Dërgo një sasi të vogël te adresa e faucet-it ose e një shoku."],["Analizo transaksionin","Shkruaj inputs, outputs, kusurin dhe tarifën. Kontrollo: inputs = outputs + tarifa."]],
+res:"Një transaksion i konfirmuar ku e identifikon kusurin dhe tarifën.",fail:["Faucet-et shpesh bien ose kanë limit: provo një tjetër ose pyet ligjëruesin.","Pa konfirmim: prit disa minuta, bllokët e Bitcoin vijnë rreth çdo 10 minuta."]},
+{id:"lab-10",m:20,x:15,s:10,t:"MetaMask dhe Sepolia",g:"Dërgo ETH testimi dhe lexo transaksionin në Etherscan.",w:1,need:["MetaMask i instaluar","Link i faucet-it Sepolia nga ligjëruesi"],
+steps:[["Aktivizo rrjetet e testimit","MetaMask → zgjedhësi i rrjetit → shfaq rrjetet e testimit → zgjidh Sepolia."],["Kopjo adresën","Klikoni emrin e llogarisë për ta kopjuar."],["Merr ETH testimi","Përdor faucet-in që jep ligjëruesi. Pas pak minutash shfaqet saldo."],["Dërgo ETH te një koleg","Sasi shumë e vogël, p.sh. 0.001 ETH."],["Hap transaksionin në Etherscan","Shko te sepolia.etherscan.io dhe kërko hash-in e transaksionit."],["Lexo fushat","Gjej: from, to, value, gas used, tarifa, bllokun dhe statusin."]],
+res:"Transaksion Success në Sepolia dhe fushat e shkruara në fletore.",fail:["Saldo 0: faucet-i mund të vonojë ose të ketë limit ditor.","Rrjeti i gabuar: sigurohu që lart shkruan Sepolia."]},
+{id:"lab-12",m:20,x:15,s:12,t:"Contract-i i parë në Remix",g:"Shkruaj, kompilo dhe provo SimpleStorage.",need:["Shfletues me remix.ethereum.org"],
+steps:[["Krijo skedarin","Në Remix, File Explorer → skedar i ri SimpleStorage.sol."],["Ngjit kodin","Kopjo kodin më poshtë.",SOL+"contract SimpleStorage {\n    uint256 private value;\n\n    function set(uint256 v) public {\n        value = v;\n    }\n\n    function get() public view returns (uint256) {\n        return value;\n    }\n}"],["Kompilo","Tab-i Solidity Compiler → versioni 0.8.x → Compile."],["Deploy në Remix VM","Tab-i Deploy & Run → Environment: Remix VM → Deploy."],["Provo funksionet","Thirr set me 42, pastaj get. Duhet të kthejë 42."],["Eksperimento","Ndrysho kodin: shto një event dhe krahaso logs-et në terminal."]],
+res:"get kthen vlerën që e vendose me set.",fail:["Gabim kompilimi: lexo rreshtin e shënuar, shpesh mungon ;.","Pas ndryshimit të kodit duhet Compile dhe Deploy përsëri."]},
+{id:"lab-14",m:30,x:15,s:14,t:"Ownable dhe Escrow",g:"Ndërto një Escrow me kontroll qasjeje, events dhe errors.",need:["Remix IDE","Të paktën dy llogari në Remix VM"],
+steps:[["Krijo Escrow.sol","Ngjit kodin.",SOL+"contract Escrow {\n    address public buyer;\n    address public seller;\n    bool public funded;\n    bool public released;\n\n    event Funded(address indexed buyer, uint256 amount);\n    event Released(address indexed seller, uint256 amount);\n\n    error NotBuyer();\n    error WrongState();\n\n    constructor(address _seller) {\n        buyer = msg.sender;\n        seller = _seller;\n    }\n\n    function deposit() external payable {\n        if (msg.sender != buyer) revert NotBuyer();\n        if (funded) revert WrongState();\n        funded = true;\n        emit Funded(msg.sender, msg.value);\n    }\n\n    function release() external {\n        if (msg.sender != buyer) revert NotBuyer();\n        if (!funded || released) revert WrongState();\n        released = true;\n        uint256 amount = address(this).balance;\n        (bool ok, ) = seller.call{value: amount}(\"\");\n        require(ok, \"Failed\");\n        emit Released(seller, amount);\n    }\n}"],
+["Deploy me adresën e shitësit","Kopjo adresën e llogarisë së dytë në Remix VM dhe vendose si parametër te Deploy."],["Depozito","Në fushën Value vendos 1 ether, pastaj thirr deposit."],["Çliro paratë","Thirr release dhe shiko saldon e shitësit."],["Testo dështimin","Ndërro llogarinë dhe thirr release. Duhet të shohësh NotBuyer."],["Shto një rregull","Detyrë: shto funksionin refund që e kthen paranë te blerësi para çlirimit."]],
+res:"Shitësi merr paranë dhe thirrja nga llogaria e gabuar dështon me NotBuyer.",fail:["Value mbetet 0: zgjidh njësinë (ether) para se të thërresësh deposit."]},
+{id:"lab-16",m:30,x:15,s:16,t:"ERC-20 në Sepolia",g:"Krijo një token dhe nise projektin final.",w:1,need:["MetaMask me Sepolia dhe ETH testimi","Remix IDE"],
+steps:[["Krijo MyToken.sol","Ngjit kodin.",SOL+"import \"@openzeppelin/contracts/token/ERC20/ERC20.sol\";\n\ncontract MyToken is ERC20 {\n    constructor() ERC20(\"MyToken\", \"MTK\") {\n        _mint(msg.sender, 1000000 * 10 ** decimals());\n    }\n}"],["Provo në Remix VM","Kompilo dhe deploy fillimisht në Remix VM."],["Kalo në Sepolia","Environment: Injected Provider - MetaMask. Sigurohu që rrjeti është Sepolia."],["Deploy dhe konfirmo","Konfirmo në MetaMask dhe kopjo adresën e contract-it."],["Importo tokenin","MetaMask → Import tokens → ngjit adresën."],["Dërgo tokena te një koleg","Pastaj kontrollo transaksionin në sepolia.etherscan.io."],["Nis projektin final","Zgjidh idenë, krijo README me përshkrimin dhe plan për dy javët."]],
+res:"Tokeni shfaqet në MetaMask me saldo prej 1,000,000 MTK.",fail:["Import nuk gjendet: kontrollo që është adresa e contract-it, jo e llogarisë.","Deploy dështon: kontrollo që ke ETH testimi në Sepolia."]}
+];
+const KEY="blockchain-labs-v2",HASH="5f9c21151aeb5db3b1494384054fdc3862c779cded5eb20a533abe9eab047e84";let S={},tm;
+try{S=JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){S={}}
+for(const k of["c","d","t","u"])S[k]=S[k]||{};
+if(!S.os)S.os=/Mac|iPhone|iPad/.test(navigator.platform||navigator.userAgent)?"mac":"win";
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){};const profile=S.profile,snapshot=JSON.stringify({state:{...S}});if(profile?.nickname){window.__dbQueue=(window.__dbQueue||Promise.resolve()).then(()=>fetch('/api/progress/'+encodeURIComponent(profile.nickname),{method:'PUT',headers:{'Content-Type':'application/json'},body:snapshot})).catch(()=>{})}};
+const $=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+const mac=()=>S.os==="mac";
+const fx=s=>s.replace(/\{py\}/g,mac()?"python3":"python").replace(/\{term\}/g,mac()?"Terminal (Cmd + Space, shkruaj Terminal)":"PowerShell (shtyp Windows, shkruaj PowerShell)").replace(/\{gitmac\}/g,mac()?" Në Mac, nëse kërkon Command Line Tools, pranoje.":"").replace(/\{pynote\}/g,mac()?" Në Mac komanda është python3.":" Gjatë instalimit shëno Add Python to PATH.");
+const sha=async s=>[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s)))].map(x=>x.toString(16).padStart(2,"0")).join("");
+const cnt=l=>l.steps.filter((_,i)=>S.c[l.id+"-"+i]).length;
+const xp=()=>Object.values(S.d).reduce((a,b)=>a+b.xp,0)+(S.pxp||0);
+const fmt=s=>Math.floor(s/60)+":"+String(s%60).padStart(2,"0");
+const isOpen=i=>i===0||!!S.d[LABS[i-1].id]||!!S.u[LABS[i].id];
+const curIdx=()=>Math.max(0,LABS.findIndex(l=>l.id===location.hash.slice(1)));
+function me(){const e=document.getElementById("me");e.textContent="";
+ if(!S.name){e.append($("span",0,"Shkruaj emrin për të nisur. Përparimi ruhet vetëm në këtë shfletues."));const i=$("input");i.placeholder="Emri ose pseudonimi";i.setAttribute("aria-label","Emri ose pseudonimi");const b=$("button",0,"Nis");b.onclick=()=>{if(i.value.trim()){S.name=i.value.trim().slice(0,24);save();me()}};e.append(i,b);return}
+ const finished=Object.keys(S.d).length,simDone=Object.values(S.q||{}).filter(x=>x>=3).length;
+ e.append($("b",0,S.name),$("span",0," · "+xp()+" XP"),$("small",0,"\n"+finished+"/"+LABS.length+" laboratorë · "+simDone+"/3 sfida interaktive"),$("br"));
+ const r=$("button",0,"Kopjo raportin");r.onclick=async()=>{const t=S.name+" · "+xp()+" XP\n"+LABS.map(l=>"Seanca "+l.s+": "+(S.d[l.id]?"përfunduar, "+S.d[l.id].xp+" XP, "+fmt(S.d[l.id].s)+" min":"jo")).join("\n");try{await navigator.clipboard.writeText(t);r.textContent="U kopjua"}catch(x){r.textContent="Nuk u kopjua"}setTimeout(()=>r.textContent="Kopjo raportin",1800)};e.append(r)}
+function menu(){const cur=LABS[curIdx()].id,m=document.getElementById("menu");m.textContent="";
+ LABS.forEach((l,i)=>{const a=$("a");a.href="#"+l.id;if(l.id===cur)a.setAttribute("aria-current","page");a.append(l.t);const n=cnt(l);
+  a.append($("small",0,"Seanca "+l.s+" · "+(S.d[l.id]?"përfunduar":isOpen(i)?n+"/"+l.steps.length+" hapa":"mbyllur")));
+  const b=$("div","bar"),p=$("i");p.style.width=(S.d[l.id]?100:100*n/l.steps.length)+"%";b.append(p);a.append(b);m.append(a)});me()}
+function finish(l){const st=S.t[l.id],secs=st?Math.floor((Date.now()-st)/1000):0,lim=l.m*60;const bonus=!st?0:secs<=lim?10:secs<=lim*1.5?5:0;S.d[l.id]={xp:l.x+bonus,s:secs};delete S.t[l.id];save();render();scrollTo(0,0)}
+ function simulator(l,m){
+ const kind=l.id==="lab-6"?"terminal":l.id==="lab-12"?"remix":l.id==="lab-14"?"escrow":"";if(!kind)return;
+ const data={terminal:{title:"Terminal interaktiv · Python dhe SHA-256",base:"student@lab:~$ python hash.py",steps:[["Cila komandë ekzekuton skedarin?",["python hash.py","python -m hash.py","hash.py"],"$ python hash.py\n9f86d081884c7d659a2feaa0c55ad015..."],["Cili algoritëm përdoret në kod?",["SHA-256","AES-256","MD5"],"Algoritmi: SHA-256 ✓\nHash-i ka 64 karaktere hex."],["Çfarë ndodh kur ndryshon një shkronjë?",["Hash-i ndryshon pothuajse krejt","Ndryshon vetëm shkronja e fundit","Hash-i mbetet i njëjtë"],"Efekti i ortekut: një ndryshim i vogël\nprodhon hash krejt tjetër."]] },remix:{title:"Remix IDE · SimpleStorage",base:"File Explorer   SimpleStorage.sol\ncontract SimpleStorage { ... }",steps:[["Çfarë duhet bërë para Deploy?",["Compile kontratën","Run transaction","Import token"],"Solidity Compiler · Compilation successful ✓"],["Ku e deploy-on kontratën për provë?",["Remix VM","Mainnet","Etherscan"],"Deploy & Run · Environment: Remix VM ✓"],["Pas set(42), çfarë duhet të kthejë get()?",["42","0","Gabim"],"Call get() → 42 ✓"]]},escrow:{title:"Escrow · simulim i gjendjes",base:"buyer: 0xA1…  |  seller: 0xB2…\nbalance: 1 ETH   funded: true",steps:[["Kush mund t’i çlirojë fondet sipas kodit?",["Blerësi (buyer)","Shitësi (seller)","Çdo adresë"],"Kontrolli i qasjes: msg.sender == buyer ✓"],["Cilin funksion thërret blerësi?",["release()","deposit()","refund()"],"release() u thirr nga buyer ✓"],["Çfarë ndodh me saldon?",["I kalon shitësit","Kthehet te blerësi","Mbetet gjithmonë në contract"],"released: true   seller received: 1 ETH ✓"]]}}[kind];
+ const key="sim-"+l.id;let state=Number(S.q?.[key]||0),step=data.steps[state];const box=$("section","sim");box.append($("h3",0,data.title));const screen=$("div","screen",data.base);box.append(screen);const msg=$("div","feedback");
+ if(!step){msg.textContent="Sfida u përfundua · progresi ruhet në këtë shfletues.";msg.classList.add("ok");box.append(msg);m.append(box);return}
+ box.append($("p",0,step[0]));step[1].forEach((label,i)=>{const b=$("button",0,label);b.onclick=()=>{if(i===0){state++;S.q=S.q||{};S.q[key]=state;save();screen.textContent=step[2];msg.textContent=state===data.steps.length?"Saktë! Sfida u përfundua.":"Saktë! Vazhdo me hapin tjetër.";msg.classList.add("ok");box.querySelectorAll("button").forEach(x=>x.disabled=true);setTimeout(()=>simulator(l,m),500)}else{msg.textContent="Provo sërish. Mendo për hapin që po kryen.";msg.classList.remove("ok")}};box.append(b)});box.append(msg);m.append(box)
+}
+function render(){clearInterval(tm);const idx=curIdx(),l=LABS[idx],m=document.getElementById("main");m.textContent="";
+ m.append($("h2",0,"Seanca "+l.s+": "+l.t),$("p","goal",l.g));document.title=l.t+" · Udhëzuesit e laboratorëve";
+ if(!isOpen(idx)){const p=LABS[idx-1],b=$("div","box");b.append($("b",0,"Mbyllur"),$("span",0,"Ky laborator hapet kur përfundon laboratorin e seancës "+p.s+"."));
+  const c=$("input");c.placeholder="Kod nga ligjëruesi";c.setAttribute("aria-label","Kod nga ligjëruesi");const k=$("button",0,"Hap me kod");
+  k.onclick=async()=>{if(await sha(c.value.trim())===HASH){S.u[l.id]=1;save();render()}else k.textContent="Kod i gabuar"};
+  const a=$("a",0,"‹ Kthehu te "+p.t);a.href="#"+p.id;b.append($("br"),c,k,$("br"),a);m.append(b);menu();return}
+ const dn=S.d[l.id];
+ if(dn){const o=$("div","box res");o.append($("b",0,"Laboratori u përfundua"),$("span",0,"+"+dn.xp+" XP"+(dn.s?" · koha "+fmt(dn.s):"")));m.append(o)}
+ if(l.w){const w=$("div","box warn");w.append($("b",0,"Rregull sigurie"),$("span",0,WARN));m.append(w)}
+ const need=$("div","box");need.append($("b",0,"Të duhen"));const ul=$("ul");l.need.forEach(n=>ul.append($("li",0,n)));need.append(ul);m.append(need);
+ simulator(l,m);
+ const tools=$("div","tools");
+ ["win","mac"].forEach(o=>{const b=$("button",0,o==="mac"?"Mac":"Windows");b.setAttribute("aria-pressed",String(S.os===o));b.onclick=()=>{S.os=o;save();render()};tools.append(b)});
+ const tmr=$("span","tm");const tick=()=>{const st=S.t[l.id];tmr.textContent=dn?"":st?"Koha: "+fmt(Math.floor((Date.now()-st)/1000))+" (synimi "+l.m+" min)":l.x+" XP + deri 10 XP bonus nëse e nis kohëmatësin"};tools.append(tmr);
+ if(!dn&&!S.t[l.id]){const b=$("button",0,"Nis kohëmatësin");b.onclick=()=>{S.t[l.id]=Date.now();save();render()};tools.append(b)}
+ const rst=$("button",0,"Fshi përparimin");rst.onclick=()=>{l.steps.forEach((_,i)=>delete S.c[l.id+"-"+i]);delete S.d[l.id];delete S.t[l.id];save();render()};tools.append(rst);m.append(tools);
+ tick();if(!dn&&S.t[l.id])tm=setInterval(tick,1000);
+ l.steps.forEach((s,i)=>{const k=l.id+"-"+i,d=$("div","step"+(S.c[k]?" done":"")),c=$("input");c.type="checkbox";c.checked=!!S.c[k];c.setAttribute("aria-label","Hapi "+(i+1));
+  c.onchange=()=>{if(c.checked)S.c[k]=1;else delete S.c[k];save();d.classList.toggle("done",c.checked);if(cnt(l)===l.steps.length&&!S.d[l.id])finish(l);else menu()};
+  const b=$("div");b.append($("h3",0,(i+1)+". "+s[0]),$("p",0,fx(s[1])));
+  if(s[2]){const code=fx(s[2]),p=$("pre"),btn=$("button",0,"Kopjo");btn.onclick=async()=>{try{await navigator.clipboard.writeText(code);btn.textContent="U kopjua"}catch(e){btn.textContent="Zgjidhe dhe kopjoje"}setTimeout(()=>btn.textContent="Kopjo",1800)};p.append(btn,document.createTextNode(code));b.append(p)}
+  d.append(c,b);m.append(d)});
+ const r=$("div","box res");r.append($("b",0,"Rezultati i pritur"),$("span",0,l.res));m.append(r);
+ const f=$("div","box fail");f.append($("b",0,"Çka mund të dështojë"));const fu=$("ul");l.fail.forEach(x=>fu.append($("li",0,x)));f.append(fu);m.append(f);
+ const n=$("div","nav2");const pv=LABS[idx-1],nx=LABS[idx+1];[pv,nx].forEach((x,j)=>{const a=$("a",0,x?(j?x.t+(isOpen(idx+1)?"":" (mbyllur)")+" ›":"‹ "+x.t):"");if(x)a.href="#"+x.id;n.append(a)});m.append(n);
+ menu()}
+// Classroom app refinements: profile gate, guided steps, help cards and stable challenge placement.
+function me(){const e=document.getElementById('me');e.textContent='';if(!S.profile){e.append($('b',0,'Profili i studentit'));e.append($('small','hint','Krijo profilin ose përdor pseudonimin ekzistues për të vazhduar.'))}else{const fin=Object.keys(S.d).length,sd=Object.values(S.q||{}).filter(v=>v>=3).length;e.append($('b',0,S.profile.fullName),$('small',0,'@'+S.profile.nickname+' · '+xp()+' XP · '+fin+'/'+LABS.length+' seanca · '+sd+'/3 sfida'));const ex=$('button',0,'Shkarko databazën (JSON)');ex.onclick=()=>{location.href='/api/export'};const sw=$('button',0,'Ndërro profilin');sw.onclick=()=>{save();localStorage.removeItem(KEY);S={c:{},d:{},t:{},u:{},q:{},pxp:0,os:S.os};render();menu()};e.append($('br'),ex,sw)}}
+function menu(){const cur=LABS[curIdx()].id,m=document.getElementById('menu');m.textContent='';if(!S.profile)return;LABS.forEach((l,i)=>{const a=$('a');a.href='#'+l.id;if(l.id===cur)a.setAttribute('aria-current','page');a.append(l.t);a.append($('small',0,'Seanca '+l.s+' · '+(S.d[l.id]?'përfunduar':isOpen(i)?cnt(l)+'/'+l.steps.length+' hapa':'mbyllur')));const b=$('div','bar'),p=$('i');p.style.width=(S.d[l.id]?100:100*cnt(l)/l.steps.length)+'%';b.append(p);a.append(b);m.append(a)});me()}
+function stepHelp(l,i){const key=l.id+':'+i;const tips={
+'lab-2:0':'Hape code.visualstudio.com, shkarko instaluesin për sistemin tënd dhe prano opsionet e parazgjedhura. Pas instalimit hape VS Code nga Start ose Applications.',
+'lab-2:1':'Instalo Node.js LTS nga nodejs.org. Në Windows mbylle PowerShell-in dhe hape prapë pas instalimit; pastaj provo node -v dhe npm -v. LTS është versioni i qëndrueshëm për kursin.',
+'lab-2:2':'Merr Git vetëm nga git-scm.com. Në instalues mund t’i lësh zgjedhjet standarde. Mbylle dhe rihape terminalin para git --version.',
+'lab-2:3':'Gjatë instalimit në Windows shëno “Add Python to PATH”. Në Mac përdor python3 --version. Nëse komanda nuk njihet, hape terminal të ri.',
+'lab-2:4':'Instalo MetaMask vetëm nga metamask.io ose dyqani zyrtar i shfletuesit. Për laborator përdor wallet testimi. Shkruaj seed phrase vetëm offline; mos e dërgo askund dhe mos e vendos në këtë faqe.',
+'lab-2:5':'Remix hapet në shfletues. Nuk kërkon instalim. Për hapat e parë, përdor Remix VM; ai krijon blockchain testues brenda faqes.',
+'lab-10:0':'Në MetaMask hap menynë Networks dhe aktivizo “Show test networks”, pastaj zgjidh Sepolia. Mos shto rrjet me të dhëna të rastësishme.',
+'lab-10:2':'Faucet-i jep ETH pa vlerë reale në Sepolia. Përdor vetëm linkun që e jep ligjëruesi; disa faucet-e kërkojnë verifikim ose saldo minimale në mainnet.',
+'lab-12:3':'Zgjidh “Remix VM (Prague)” te Deploy & Run. Prague këtu është versioni i EVM-së brenda sandbox-it, jo rrjet publik. Lëre Compiler EVM Version në Default. Mos zgjidh Injected Provider për këtë ushtrim.',
+'lab-12:4':'Pas Deploy, hap Deployed Contracts. Thirr set(42), pastaj get(). Remix VM përdor llogari testimi të krijuara nga Remix dhe nuk lidhet me MetaMask.',
+'lab-14:1':'Kopjo adresën e llogarisë së dytë te Remix VM dhe vendose si seller te Deploy. Adresat janë të krijuara për simulim.',
+'lab-14:2':'Në fushën Value zgjidh 1 dhe njësinë ether, pastaj kliko deposit. Kontrollo që llogaria aktive është buyer.',
+'lab-16:2':'Për kontratë testuese në Sepolia zgjidh “Browser Extension”/“Injected Provider - MetaMask” (emri mund të ndryshojë), pastaj lejo lidhjen. Ndërro rrjetin në Sepolia në MetaMask. Remix VM (Prague) është vetëm sandbox dhe nuk publikon në Sepolia.',
+'lab-16:3':'Konfirmo vetëm kur MetaMask tregon Sepolia dhe funksionin e deploy. Mos konfirmo transaksion në Mainnet. Mbaje pak ETH testimi për gas.'};return tips[key]||'Nëse ngec, kthehu te udhëzimi i hapit dhe krahasoje me rezultatin e pritur. Ky hap nuk kërkon seed phrase ose para reale.'}
+function simulator(l,m){const kind=l.id==='lab-6'?'terminal':l.id==='lab-12'?'remix':l.id==='lab-14'?'escrow':'';if(!kind)return;const d={terminal:{title:'Terminal · Python dhe SHA-256',base:'student@lab:~$ python hash.py',steps:[['Cila komandë ekzekuton skedarin?',['python hash.py','python -m hash.py','hash.py'],0,'$ python hash.py\n9f86d081884c7d659a2feaa0c55ad015...'],['Cili algoritëm përdoret në kod?',['SHA-256','AES-256','MD5'],0,'Algoritmi: SHA-256 ✓\nHash-i ka 64 karaktere hex.'],['Çfarë ndodh kur ndryshon një shkronjë?',['Hash-i ndryshon pothuajse krejt','Ndryshon vetëm shkronja e fundit','Hash-i mbetet i njëjtë'],0,'Efekti i ortekut: një ndryshim i vogël\nprodhon hash krejt tjetër.']]},remix:{title:'Remix IDE · SimpleStorage',base:'File Explorer   SimpleStorage.sol\ncontract SimpleStorage { ... }',steps:[['Çfarë bëhet para Deploy?',['Run transaction','Compile kontratën','Import token'],1,'Solidity Compiler · Compilation successful ✓'],['Ku e deploy-on për provë?',['Mainnet','Etherscan','Remix VM (Prague)'],2,'Deploy & Run · Environment: Remix VM (Prague) ✓'],['Pas set(42), çfarë kthen get()?',['42','0','Gabim'],0,'Call get() → 42 ✓']]},escrow:{title:'Escrow · simulim i gjendjes',base:'buyer: 0xA1…  |  seller: 0xB2…\nbalance: 1 ETH   funded: true',steps:[['Kush mund t’i çlirojë fondet?',['Shitësi (seller)','Blerësi (buyer)','Çdo adresë'],1,'Access control: msg.sender == buyer ✓'],['Cilin funksion thërret blerësi?',['deposit()','refund()','release()'],2,'release() u thirr nga buyer ✓'],['Kujt i kalon saldoja?',['I kalon shitësit','Kthehet te blerësi','Mbetet në contract'],0,'released: true   seller received: 1 ETH ✓']]}}[kind];const key='sim-'+l.id;let state=Number(S.q?.[key]||0),step=d.steps[state];const box=$('section','challenge');box.append($('h3',0,d.title));const screen=$('div','screen',d.base);box.append(screen);const feedback=$('div','feedback');if(!step){feedback.textContent='Sfida u përfundua. Progresi u ruajt.';feedback.classList.add('ok');box.append(feedback);m.append(box);return}box.append($('div','q',step[0]));const opts=step[1].map((label,i)=>({label,correct:i===step[2]})).sort(()=>Math.random()-.5);opts.forEach(o=>{const b=$('button',0,o.label);b.onclick=()=>{if(!o.correct){feedback.textContent='Provo përsëri. Mendo për hapin ose rregullin që po zbaton.';return}state++;S.q=S.q||{};S.q[key]=state;if(state===d.steps.length){S.pxp=(S.pxp||0)+3;feedback.textContent='Saktë! Sfida u përfundua · +3 XP';const pop=$('div','xp-pop','+3 XP');document.body.append(pop);setTimeout(()=>pop.remove(),1600)}else feedback.textContent='Saktë. Vazhdo te pyetja tjetër.';feedback.classList.add('ok');screen.textContent=step[3];box.querySelectorAll('button').forEach(x=>x.disabled=true);save();setTimeout(()=>{render();menu()},700)};box.append(b)});box.append(feedback);m.append(box)}
+function render(){clearInterval(tm);const m=document.getElementById('main');m.textContent='';const idx=curIdx(),l=LABS[idx];document.title=l.t+' · Udhëzuesit e laboratorëve';
+ if(!S.profile){m.append($('h2',0,'Mirë se erdhe në laborator'),$('p','goal','Përparimi lidhet me pseudonimin tënd dhe ruhet në databazën lokale të kursit.'));const card=$('div','box profile');card.append($('b',0,'Krijo profil ose vazhdo'));const fields=[['first','Emri'],['last','Mbiemri'],['nickname','Pseudonimi']];const inputs={};fields.forEach(([k,label])=>{const lab=$('label',0,label),input=$('input');input.required=true;input.autocomplete=k==='nickname'?'username':'given-name';input.placeholder=label;lab.append(input);inputs[k]=input;card.append(lab)});const err=$('p','fail');const go=$('button',0,'Ruaj profilin dhe nis');go.onclick=async()=>{const first=inputs.first.value.trim(),last=inputs.last.value.trim(),nickname=inputs.nickname.value.trim();if(!first||!last||!nickname){err.textContent='Plotëso emrin, mbiemrin dhe pseudonimin.';card.append(err);return}go.disabled=true;go.textContent='Duke ruajtur…';try{const r=await fetch('/api/profile',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({first,last,nickname})});const data=await r.json();if(!r.ok)throw Error(data.error||'Gabim gjatë ruajtjes');S=data.profile.state||S;S.profile={nickname:data.profile.nickname,fullName:data.profile.fullName};for(const k of ['c','d','t','u','q'])S[k]=S[k]||{};save();render();menu()}catch(e){err.textContent='Nuk u ruajt profili: '+e.message+'. Nise faqen nga VS Code me npm start, jo me hapje file://.';card.append(err);go.disabled=false;go.textContent='Provo përsëri'}};card.append(go,$('small','hint','Pseudonimi shërben për të gjetur progresin në këtë databazë. Ky prototip është për përdorim lokal në klasë, pa të dhëna sekrete.'));m.append(card);me();return}
+ if(!isOpen(idx)){const p=LABS[idx-1],b=$('div','box');b.append($('b',0,'Seanca është e kyçur'),$('span',0,'Përfundo seancën '+p.s+' për të vazhduar.'));const a=$('a',0,'Kthehu te '+p.t);a.href='#'+p.id;b.append($('br'),a);m.append(b);menu();return}
+ m.append($('h2',0,'Seanca '+l.s+': '+l.t),$('p','goal',l.g));if(l.w){const w=$('div','box warn');w.append($('b',0,'Rregull sigurie'),$('span',0,WARN));m.append(w)}const need=$('div','box');need.append($('b',0,'Të duhen'));const ul=$('ul');l.need.forEach(x=>ul.append($('li',0,x)));need.append(ul);m.append(need);
+ const timer=$('div','timer-card');const timerInfo=$('div');timerInfo.append($('strong',0,'Kohëmatësi i seancës'),$('br'));const clock=$('span','tm');const start=$('button',0,'Nis kohëmatësin');const tick=()=>{clock.textContent=S.d[l.id]?'✓ Seanca u përfundua · '+fmt(S.d[l.id].s||0):S.t[l.id]?'⏱ '+fmt(Math.floor((Date.now()-S.t[l.id])/1000))+' / synimi '+l.m+' min':'Nis kohëmatësin për të zhbllokuar hapin 1'};timerInfo.append(clock);timer.append(timerInfo);if(!S.t[l.id]&&!S.d[l.id]){start.onclick=()=>{S.t[l.id]=Date.now();save();render()};timer.append(start)}else if(!S.d[l.id])tm=setInterval(tick,1000);m.append(timer);tick();
+ l.steps.forEach((s,i)=>{const k=l.id+'-'+i,done=!!S.c[k],prior=i===0||!!S.c[l.id+'-'+(i-1)],locked=!done&&(!S.t[l.id]||!prior);const row=$('section','step'+(done?' done':'')+(locked?' locked':''));const body=$('div','step-body');body.append($('h3',0,(i+1)+'. '+s[0]),$('p',0,fx(s[1])));if(s[2]){const code=fx(s[2]),pre=$('pre'),copy=$('button',0,'Kopjo kodin');copy.onclick=async()=>{try{await navigator.clipboard.writeText(code);copy.textContent='U kopjua'}catch{copy.textContent='Zgjidhe dhe kopjoje'}};pre.append(copy,document.createTextNode(code));body.append(pre)}const help=document.createElement('details');help.className='help';help.append($('summary',0,'Ke nevojë për ndihmë të fshehtë?'),$('p',0,stepHelp(l,i)));body.append(help);const actions=$('div','step-actions'),btn=$('button','done-btn',done?'U krye ✓':'Shëno si të kryer');btn.disabled=locked||done;btn.onclick=()=>{if(locked||done)return;S.c[k]=1;const points=[1,2,1,5,2,1][i%6];S.pxp=(S.pxp||0)+points;save();const pop=$('div','xp-pop','+'+points+' XP');document.body.append(pop);setTimeout(()=>pop.remove(),1600);if(cnt(l)===l.steps.length&&!S.d[l.id])finish(l);else render();menu()};actions.append(btn);body.append(actions);row.append(body);m.append(row)});
+ simulator(l,m);const result=$('div','box res');result.append($('b',0,'Rezultati i pritur'),$('span',0,l.res));m.append(result);const fail=$('div','box fail');fail.append($('b',0,'Çka mund të dështojë'));const fu=$('ul');l.fail.forEach(x=>fu.append($('li',0,x)));fail.append(fu);m.append(fail);const tools=$('div','tools');['win','mac'].forEach(o=>{const b=$('button',0,o==='mac'?'Mac':'Windows');b.setAttribute('aria-pressed',String(S.os===o));b.onclick=()=>{S.os=o;save();render()};tools.append(b)});const reset=$('button',0,'Fshi përparimin e kësaj seance');reset.onclick=()=>{if(!confirm('Fshi hapat dhe kohën e kësaj seance?'))return;l.steps.forEach((_,i)=>delete S.c[l.id+'-'+i]);delete S.d[l.id];delete S.t[l.id];save();render()};tools.append(reset);m.append(tools);menu();
+}
+addEventListener("hashchange",()=>{render();scrollTo(0,0)});render();
+</script>
+</body>
+</html>
+
+
