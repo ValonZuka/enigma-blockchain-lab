@@ -51,6 +51,20 @@ const server = http.createServer(async (req, res) => {
       writeDb(db);
       return send(res, 201, { profile, returning: false });
     }
+    if (req.method === 'POST' && url.pathname === '/api/login') {
+      const input = await bodyJson(req);
+      const q = String(input.query || '').trim().toLowerCase().replace(/\s+/g, ' ').slice(0, 101);
+      if (q.length < 2) return send(res, 400, { error: 'Shkruaj pseudonimin ose emrin e mbiemrin.' });
+      const db = readDb();
+      const nick = q.replace(/[^a-z0-9_-]/g, '');
+      let profile = db.profiles[nick] && !q.includes(' ') ? db.profiles[nick] : null;
+      if (!profile) {
+        const matches = Object.values(db.profiles).filter(p => String(p.fullName || '').trim().toLowerCase().replace(/\s+/g, ' ') === q);
+        if (matches.length > 1) return send(res, 409, { error: 'Ka disa profile me këtë emër. Hyr me pseudonimin.' });
+        profile = matches[0] || null;
+      }
+      return profile ? send(res, 200, { profile }) : send(res, 404, { error: 'Profili nuk u gjet. Krijo një profil të ri.' });
+    }
     if (req.method === 'PUT' && url.pathname.startsWith('/api/progress/')) {
       const nickname = decodeURIComponent(url.pathname.slice('/api/progress/'.length)).toLowerCase();
       const db = readDb();
