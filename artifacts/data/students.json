@@ -1,0 +1,24 @@
+{
+  "profiles": {
+    "valoni123": {
+      "nickname": "valoni123",
+      "fullName": "aalwkdm aslkdmwalkmd",
+      "createdAt": "2026-11-17T01:06:14.271Z",
+      "unlocked": {},
+      "pin": {
+        "salt": "ca928f701e7ae8e0",
+        "hash": "32c607bc1fa69a0b4f5771aef4916d29c1ac49a776c50b7b645377b764e5adef"
+      },
+      "state": {
+        "c": {},
+        "k": {},
+        "d": {},
+        "t": {},
+        "q": {},
+        "a": {},
+        "av": 3
+      },
+      "updatedAt": "2026-11-17T01:06:14.382Z"
+    }
+  }
+}

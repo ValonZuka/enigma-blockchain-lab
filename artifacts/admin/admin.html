@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f7fb">
+  <title>Paneli i ligjëruesit</title>
+<link rel="stylesheet" href="/admin-s.css">
+</head>
+<body>
+  <h1>Paneli i ligjëruesit</h1>
+
+  <p>
+    <input id="tk" type="password" placeholder="Token admin" aria-label="Token admin">
+    <button id="go" type="button">Hap</button>
+    <button id="ex" type="button">Shkarko JSON</button>
+    <span id="msg" aria-live="polite"></span>
+  </p>
+
+  <div id="out" aria-live="polite"></div>
+
+  <h2>Pyetje shtesë për seancat</h2>
+  <p>Përgjigja e parë është gjithmonë e sakta; studenti i sheh të përzier.</p>
+
+  <div id="qa"></div>
+  <div id="ql"></div>
+
+  <script>
+    const L = ['lab-2', 'lab-6', 'lab-8', 'lab-10', 'lab-12', 'lab-14', 'lab-16'];
+    const $ = id => document.getElementById(id);
+    let tk = sessionStorage.getItem('adm') || '';
+    $('tk').value = tk;
+
+    const api = async (p, o = {}) => {
+      const r = await fetch(p, {
+        ...o,
+        headers: {
+          'x-admin-token': tk,
+          'Content-Type': 'application/json'
+        }
+      });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw Error(j.error || r.status);
+      return j;
+    };
+
+    const xp = s =>
+      Object.values(s.d || {}).reduce((a, b) => a + b.xp, 0) +
+      Object.keys(s.c || {}).filter(k => !(s.k || {})[k]).length * 2 +
+      Object.values(s.q || {}).filter(v => v >= 3).length * 3;
+
+    async function load() {
+      tk = $('tk').value.trim();
+
+      try {
+        const { profiles } = await api('/api/admin/overview');
+        sessionStorage.setItem('adm', tk);
+        $('msg').textContent = profiles.length + ' studentë';
+
+        const t = document.createElement('table');
+        t.innerHTML =
+          '<tr><th>Studenti</th><th>XP</th><th>Seanca të përfunduara</th>' +
+          '<th>Hapa të kaluar</th><th>Aktiviteti i fundit</th>' +
+          '<th>Hap seancën</th><th></th></tr>';
+
+        profiles
+          .sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)))
+          .forEach(p => {
+            const s = p.state || {};
+            const sk = Object.keys(s.k || {});
+            const r = t.insertRow();
+            const un = p.unlocked || {};
+
+            r.insertCell().textContent = p.fullName + ' (@' + p.nickname + ')';
+            r.insertCell().textContent = xp(s);
+            r.insertCell().textContent = Object.keys(s.d || {}).length + '/' + L.length;
+
+            const c = r.insertCell();
+            c.textContent = sk.length ? sk.join(', ') : '-';
+            if (sk.length) c.className = 'w';
+
+            r.insertCell().textContent = p.updatedAt
+              ? new Date(p.updatedAt).toLocaleString()
+              : '-';
+
+            const c2 = r.insertCell();
+            const sel = document.createElement('select');
+
+            L.forEach(l => {
+              const o = new Option(l + (un[l] ? ' (e hapur)' : ''), l);
+              sel.add(o);
+            });
+
+            const b = document.createElement('button');
+            b.textContent = 'Hap';
+            b.onclick = async () => {
+              await api('/api/admin/unlock', {
+                method: 'POST',
+                body: JSON.stringify({ nickname: p.nickname, lab: sel.value })
+              });
+              load();
+            };
+
+            c2.append(sel, b);
+
+            const d = document.createElement('button');
+            d.textContent = 'Fshi';
+            d.onclick = async () => {
+              if (confirm('Fshi ' + p.fullName + '?')) {
+                await api('/api/admin/delete', {
+                  method: 'POST',
+                  body: JSON.stringify({ nickname: p.nickname })
+                });
+                load();
+              }
+            };
+
+            const rp = document.createElement('button');
+            rp.textContent = 'Reset PIN';
+            rp.onclick = async () => {
+              await api('/api/admin/resetpin', {
+                method: 'POST',
+                body: JSON.stringify({ nickname: p.nickname })
+              });
+              $('msg').textContent =
+                'PIN u hoq për ' + p.nickname +
+                '. Studenti vendos PIN të ri në hyrjen e radhës.';
+            };
+
+            r.insertCell().append(rp, d);
+          });
+
+        $('out').textContent = '';
+        $('out').append(t);
+      } catch (e) {
+        $('msg').textContent = e.message;
+      }
+    }
+
+    async function loadQ() {
+      try {
+        const { questions } = await api('/api/admin/questions');
+        const l = $('ql');
+        l.textContent = '';
+
+        questions.forEach(q => {
+          const d = document.createElement('div');
+          d.textContent = q.lab + ' · ' + q.q + ' → ' + q.opts[0] + ' ';
+
+          const b = document.createElement('button');
+          b.textContent = 'Fshi';
+          b.onclick = async () => {
+            await api('/api/admin/qdel', {
+              method: 'POST',
+              body: JSON.stringify({ id: q.id })
+            });
+            loadQ();
+          };
+
+          d.append(b);
+          l.append(d);
+        });
+      } catch (e) {
+        // Questions are shown after the admin token is accepted.
+      }
+    }
+
+    (() => {
+      const f = $('qa');
+      const sel = document.createElement('select');
+
+      L.forEach(x => sel.add(new Option(x, x)));
+
+      const q = document.createElement('input');
+      q.placeholder = 'Pyetja';
+      q.style.width = '100%';
+
+      const os = [0, 1, 2, 3].map(i => {
+        const o = document.createElement('input');
+        o.placeholder = 'Përgjigja ' + (i + 1) + (i === 0 ? ' (e saktë)' : '');
+        o.style.width = '100%';
+        return o;
+      });
+
+      const b = document.createElement('button');
+      b.textContent = 'Shto pyetjen';
+
+      b.onclick = async () => {
+        try {
+          await api('/api/admin/qadd', {
+            method: 'POST',
+            body: JSON.stringify({
+              lab: sel.value,
+              q: q.value,
+              opts: os.map(o => o.value)
+            })
+          });
+
+          q.value = '';
+          os.forEach(o => o.value = '');
+          loadQ();
+        } catch (e) {
+          $('msg').textContent = e.message;
+        }
+      };
+
+      f.append(sel, q, ...os, b);
+    })();
+
+    $('go').onclick = () => {
+      load();
+      loadQ();
+    };
+
+    $('ex').onclick = async () => {
+      tk = $('tk').value.trim();
+
+      const r = await fetch('/api/export', {
+        headers: { 'x-admin-token': tk }
+      });
+
+      if (!r.ok) {
+        $('msg').textContent = 'Token i gabuar';
+        return;
+      }
+
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(await r.blob());
+      a.download = 'students.json';
+      a.click();
+    };
+
+    if (tk) load();
+  </script>
+</body>
+</html>
