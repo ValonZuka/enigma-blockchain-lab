@@ -125,3 +125,5 @@ body{position:relative;z-index:0}
 .os-pick button[aria-pressed=true]{background:var(--accbg);border-color:var(--acc)}
 
 @media (prefers-reduced-motion:reduce){.profile-card,.timer-start::after{animation:none!important}.skip-btn{transition:none}}
+
+.step.locked.need-timer:after{content:'🔒 Nis kohëmatësin për të zbuluar hapat'}
