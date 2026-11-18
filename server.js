@@ -67,6 +67,15 @@ http.createServer(async (req, res) => {
       return send(res, 200, { ok: true, unlocked: db.profiles[nk].unlocked || {} });
     }
     if (req.method === 'GET' && p.startsWith('/api/profile/')) { const nk = nick(p.slice(13)), pr = readDb().profiles[nk]; if (!pr || !authed(req, nk)) return send(res, 401, { error: 'Hyr përsëri.' }); return send(res, 200, { unlocked: pr.unlocked || {}, questions: readQ() }); }
+    if (req.method === 'PUT' && p.startsWith('/api/profile/')) {
+      const nk = nick(p.slice(13)); if (!nk || !authed(req, nk)) return send(res, 401, { error: 'Hyr përsëri.' });
+      const db = readDb(), pr = db.profiles[nk]; if (!pr) return send(res, 404, { error: 'Profili nuk u gjet.' });
+      const i = await bodyJson(req);
+      if (i.fullName && String(i.fullName).trim().length >= 2) pr.fullName = String(i.fullName).trim().slice(0, 80);
+      if (Number.isInteger(i.av) && i.av >= 0 && i.av < 6) { pr.state = pr.state || {}; pr.state.av = i.av; }
+      pr.updatedAt = new Date().toISOString(); writeDb(db);
+      return send(res, 200, { ok: true, fullName: pr.fullName, av: (pr.state && pr.state.av) || 0 });
+    }
     if (p.startsWith('/api/admin/') || p === '/api/export') {
       if (!isAdmin(req)) return send(res, 401, { error: 'Token i gabuar.' });
       const db = readDb();

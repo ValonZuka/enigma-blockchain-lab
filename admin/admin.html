@@ -3,30 +3,54 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f4f7fb">
+  <meta name="theme-color" content="#080b12">
   <title>Paneli i ligjëruesit</title>
 <link rel="stylesheet" href="/admin-style.css">
 </head>
 <body>
-  <h1>Paneli i ligjëruesit</h1>
+  <main class="admin-panel">
+    <header class="page-header">
+      <p class="eyebrow">Blockchain Fundamentals · Mjetet e kursit</p>
+      <h1>Paneli i ligjëruesit</h1>
+      <p>Menaxho qasjen, ndiq progresin dhe shiko ku kanë ngecur studentët.</p>
+    </header>
 
-  <p>
-    <input id="tk" type="password" placeholder="Token admin" aria-label="Token admin">
-    <button id="go" type="button">Hap</button>
-    <button id="ex" type="button">Shkarko JSON</button>
-    <span id="msg" aria-live="polite"></span>
-  </p>
+    <section class="admin-controls" aria-label="Qasja e administratorit">
+      <label class="sr-only" for="tk">Token admin</label>
+      <input id="tk" type="password" placeholder="Token admin">
+      <button id="go" type="button">Shfaq studentët</button>
+      <button id="ex" type="button" class="secondary">Eksporto JSON</button>
+      <span id="msg" role="status" aria-live="polite"></span>
+    </section>
 
-  <div id="out" aria-live="polite"></div>
+    <aside class="admin-note">
+      <strong>Çfarë bën “Zhblloko seancën”?</strong>
+      <p>Zgjedh një seancë te studenti dhe kliko “Zhblloko”. Kjo lejon seancën për atë student; nuk e hap përmbajtjen këtu. Nëse studenti është tashmë në faqe, seanca shfaqet brenda 15 sekondash. Përndryshe, shfaqet kur ai hyn përsëri.</p>
+    </aside>
 
-  <h2>Pyetje shtesë për seancat</h2>
-  <p>Përgjigja e parë është gjithmonë e sakta; studenti i sheh të përzier.</p>
+    <section class="students-section" aria-label="Progresi i studentëve">
+      <div id="out" aria-live="polite"></div>
+    </section>
 
-  <div id="qa"></div>
-  <div id="ql"></div>
+    <section class="questions-section">
+      <h2>Pyetje shtesë për seancat</h2>
+      <p>Përgjigjja e parë është e sakta; studentit i shfaqen alternativat të përziera.</p>
+      <div id="qa"></div>
+      <div id="ql"></div>
+    </section>
+  </main>
 
   <script>
     const L = ['lab-2', 'lab-6', 'lab-8', 'lab-10', 'lab-12', 'lab-14', 'lab-16'];
+    const SESSION_NAMES = {
+      'lab-2': 'Seanca 2 · Instalimi i mjeteve',
+      'lab-6': 'Seanca 6 · Hash dhe Merkle në Python',
+      'lab-8': 'Seanca 8 · Bitcoin në testnet',
+      'lab-10': 'Seanca 10 · MetaMask dhe Sepolia',
+      'lab-12': 'Seanca 12 · Contract-i i parë në Remix',
+      'lab-14': 'Seanca 14 · Ownable dhe Escrow',
+      'lab-16': 'Seanca 16 · ERC-20 në Sepolia'
+    };
     const $ = id => document.getElementById(id);
     let tk = sessionStorage.getItem('adm') || '';
     $('tk').value = tk;
@@ -49,25 +73,41 @@
       Object.keys(s.c || {}).filter(k => !(s.k || {})[k]).length * 2 +
       Object.values(s.q || {}).filter(v => v >= 3).length * 3;
 
+    const formatSteps = keys => {
+      const groups = new Map();
+      keys.forEach(key => {
+        const match = /^lab-(\d+)-(\d+)$/.exec(key);
+        if (!match) return;
+        const session = 'S' + match[1];
+        if (!groups.has(session)) groups.set(session, []);
+        groups.get(session).push(Number(match[2]) + 1);
+      });
+      return [...groups].map(([session, steps]) =>
+        session + ' · hapat ' + steps.join(', ')
+      ).join(' | ');
+    };
+
     async function load() {
       tk = $('tk').value.trim();
 
       try {
         const { profiles } = await api('/api/admin/overview');
         sessionStorage.setItem('adm', tk);
+        $('msg').classList.remove('error');
         $('msg').textContent = profiles.length + ' studentë';
 
         const t = document.createElement('table');
         t.innerHTML =
           '<tr><th>Studenti</th><th>XP</th><th>Seanca të përfunduara</th>' +
-          '<th>Hapa të kaluar</th><th>Aktiviteti i fundit</th>' +
-          '<th>Hap seancën</th><th></th></tr>';
+          '<th>Hapat e kryer / të kapërcyer</th><th>Aktiviteti i fundit</th>' +
+          '<th>Zhblloko seancën</th><th></th></tr>';
 
         profiles
           .sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)))
           .forEach(p => {
             const s = p.state || {};
-            const sk = Object.keys(s.k || {});
+            const skipped = Object.keys(s.k || {});
+            const completed = Object.keys(s.c || {}).filter(key => !(s.k || {})[key]);
             const r = t.insertRow();
             const un = p.unlocked || {};
 
@@ -76,8 +116,12 @@
             r.insertCell().textContent = Object.keys(s.d || {}).length + '/' + L.length;
 
             const c = r.insertCell();
-            c.textContent = sk.length ? sk.join(', ') : '-';
-            if (sk.length) c.className = 'w';
+            const progress = [];
+            if (completed.length) progress.push('Kryer: ' + formatSteps(completed));
+            if (skipped.length) progress.push('Kapërcyer: ' + formatSteps(skipped));
+            c.textContent = progress.join(' · ') || 'Asnjë hap i raportuar';
+            c.className = skipped.length ? 'w step-progress' : 'step-progress';
+            c.title = c.textContent;
 
             r.insertCell().textContent = p.updatedAt
               ? new Date(p.updatedAt).toLocaleString()
@@ -87,18 +131,33 @@
             const sel = document.createElement('select');
 
             L.forEach(l => {
-              const o = new Option(l + (un[l] ? ' (e hapur)' : ''), l);
+              const o = new Option(SESSION_NAMES[l] + (un[l] ? ' (e zhbllokuar)' : ''), l);
               sel.add(o);
             });
 
             const b = document.createElement('button');
-            b.textContent = 'Hap';
+            b.textContent = 'Zhblloko';
             b.onclick = async () => {
-              await api('/api/admin/unlock', {
-                method: 'POST',
-                body: JSON.stringify({ nickname: p.nickname, lab: sel.value })
-              });
-              load();
+              const lab = sel.value;
+              b.disabled = true;
+              try {
+                await api('/api/admin/unlock', {
+                  method: 'POST',
+                  body: JSON.stringify({ nickname: p.nickname, lab })
+                });
+                un[lab] = 1;
+                sel.options[sel.selectedIndex].textContent =
+                  SESSION_NAMES[lab] + ' (e zhbllokuar)';
+                $('msg').classList.remove('error');
+                $('msg').textContent =
+                  SESSION_NAMES[lab] + ' u zhbllokua për ' + p.fullName +
+                  '. Studenti e sheh brenda 15 sekondash ose kur hyn përsëri.';
+              } catch (e) {
+                $('msg').classList.add('error');
+                $('msg').textContent = e.message;
+              } finally {
+                b.disabled = false;
+              }
             };
 
             c2.append(sel, b);
@@ -133,6 +192,7 @@
         $('out').textContent = '';
         $('out').append(t);
       } catch (e) {
+        $('msg').classList.add('error');
         $('msg').textContent = e.message;
       }
     }
@@ -169,7 +229,7 @@
       const f = $('qa');
       const sel = document.createElement('select');
 
-      L.forEach(x => sel.add(new Option(x, x)));
+      L.forEach(x => sel.add(new Option(SESSION_NAMES[x], x)));
 
       const q = document.createElement('input');
       q.placeholder = 'Pyetja';

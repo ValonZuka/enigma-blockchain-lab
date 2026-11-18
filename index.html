@@ -38,21 +38,84 @@ res:"Një transaksion i konfirmuar ku e identifikon kusurin dhe tarifën.",fail:
 steps:[["Aktivizo rrjetet e testimit","MetaMask → zgjedhësi i rrjetit → shfaq rrjetet e testimit → zgjidh Sepolia."],["Kopjo adresën","Kliko emrin e llogarisë për ta kopjuar."],["Merr ETH testimi","Përdor faucet-in që jep ligjëruesi. Pas pak minutash shfaqet saldo."],["Dërgo ETH","Te një koleg ose te llogaria jote e dytë në MetaMask. Sasi shumë e vogël, p.sh. 0.001 ETH."],["Hap transaksionin në Etherscan","Shko te sepolia.etherscan.io dhe kërko hash-in e transaksionit."],["Lexo fushat","Gjej: from, to, value, gas used, tarifa, bllokun dhe statusin."]],
 res:"Transaksion Success në Sepolia dhe fushat e shkruara në fletore.",fail:["Saldo 0: faucet-i mund të vonojë ose të ketë limit ditor.","Rrjeti i gabuar: sigurohu që lart shkruan Sepolia."]},
 {id:"lab-12",m:20,x:15,s:12,t:"Contract-i i parë në Remix",g:"Shkruaj, kompilo dhe provo SimpleStorage.",need:["Shfletues me remix.ethereum.org"],
-steps:[["Krijo skedarin","Në Remix, File Explorer → skedar i ri SimpleStorage.sol."],["Ngjit kodin","Kopjo kodin më poshtë.",SOL+"contract SimpleStorage {\n    uint256 private value;\n\n    function set(uint256 v) public {\n        value = v;\n    }\n\n    function get() public view returns (uint256) {\n        return value;\n    }\n}"],["Kompilo","Tab-i Solidity Compiler → versioni 0.8.x → Compile."],["Deploy në Remix VM","Tab-i Deploy & Run → Environment: Remix VM → Deploy."],["Provo funksionet","Thirr set me 42, pastaj get. Duhet të kthejë 42."],["Eksperimento","Ndrysho kodin: shto një event dhe krahaso logs-et në terminal."]],
+steps:[["Krijo skedarin","Në Remix, File Explorer → skedar i ri SimpleStorage.sol."],["Ngjite kodin në file","Kopjo kodin më poshtë.",SOL+"contract SimpleStorage {\n    uint256 private value;\n\n    function set(uint256 v) public {\n        value = v;\n    }\n\n    function get() public view returns (uint256) {\n        return value;\n    }\n}"],["Kompilo","Tab-i Solidity Compiler → versioni 0.8.x → Compile."],["Deploy në Remix VM","Tab-i Deploy & Run → Environment: Remix VM → Deploy."],["Provo funksionet","Thirr set me 42, pastaj get. Duhet të kthejë 42."],["Eksperimento","Ndrysho kodin: shto një event dhe krahaso logs-et në terminal."]],
 res:"get kthen vlerën që e vendose me set.",fail:["Gabim kompilimi: lexo rreshtin e shënuar, shpesh mungon ;.","Pas ndryshimit të kodit duhet Compile dhe Deploy përsëri."]},
 {id:"lab-14",m:30,x:15,s:14,t:"Ownable dhe Escrow",g:"Ndërto një Escrow me kontroll qasjeje, events dhe errors.",need:["Remix IDE","Të paktën dy llogari në Remix VM"],
-steps:[["Krijo Escrow.sol","Ngjit kodin.",SOL+"contract Escrow {\n    address public buyer;\n    address public seller;\n    bool public funded;\n    bool public released;\n\n    event Funded(address indexed buyer, uint256 amount);\n    event Released(address indexed seller, uint256 amount);\n\n    error NotBuyer();\n    error WrongState();\n\n    constructor(address _seller) {\n        buyer = msg.sender;\n        seller = _seller;\n    }\n\n    function deposit() external payable {\n        if (msg.sender != buyer) revert NotBuyer();\n        if (funded) revert WrongState();\n        funded = true;\n        emit Funded(msg.sender, msg.value);\n    }\n\n    function release() external {\n        if (msg.sender != buyer) revert NotBuyer();\n        if (!funded || released) revert WrongState();\n        released = true;\n        uint256 amount = address(this).balance;\n        (bool ok, ) = seller.call{value: amount}(\"\");\n        require(ok, \"Failed\");\n        emit Released(seller, amount);\n    }\n}"],
+steps:[["Krijo Escrow.sol","Ngjite kodin në file.",SOL+"contract Escrow {\n    address public buyer;\n    address public seller;\n    bool public funded;\n    bool public released;\n\n    event Funded(address indexed buyer, uint256 amount);\n    event Released(address indexed seller, uint256 amount);\n\n    error NotBuyer();\n    error WrongState();\n\n    constructor(address _seller) {\n        buyer = msg.sender;\n        seller = _seller;\n    }\n\n    function deposit() external payable {\n        if (msg.sender != buyer) revert NotBuyer();\n        if (funded) revert WrongState();\n        funded = true;\n        emit Funded(msg.sender, msg.value);\n    }\n\n    function release() external {\n        if (msg.sender != buyer) revert NotBuyer();\n        if (!funded || released) revert WrongState();\n        released = true;\n        uint256 amount = address(this).balance;\n        (bool ok, ) = seller.call{value: amount}(\"\");\n        require(ok, \"Failed\");\n        emit Released(seller, amount);\n    }\n}"],
 ["Deploy me adresën e shitësit","Kopjo adresën e llogarisë së dytë në Remix VM dhe vendose si parametër te Deploy."],["Depozito","Në fushën Value vendos 1 ether, pastaj thirr deposit."],["Çliro paratë","Thirr release dhe shiko saldon e shitësit."],["Testo dështimin","Ndërro llogarinë dhe thirr release. Duhet të shohësh NotBuyer."],["Shto një rregull","Detyra A: shto refund që e kthen paranë te blerësi para çlirimit. Detyra B (Ownable): shto owner dhe modifier onlyOwner te një funksion setSeller.","","address public owner = msg.sender;\nerror NotOwner();\n\nmodifier onlyOwner() {\n    if (msg.sender != owner) revert NotOwner();\n    _;\n}\n\nfunction setSeller(address s) external onlyOwner {\n    seller = s;\n}\n\nfunction refund() external {\n    if (msg.sender != buyer) revert NotBuyer();\n    if (!funded || released) revert WrongState();\n    released = true;\n    (bool ok, ) = buyer.call{value: address(this).balance}(\"\");\n    require(ok, \"Failed\");\n}"]],
 res:"Shitësi merr paranë dhe thirrja nga llogaria e gabuar dështon me NotBuyer.",fail:["Value mbetet 0: zgjidh njësinë (ether) para se të thërresësh deposit."]},
 {id:"lab-16",m:30,x:15,s:16,t:"ERC-20 në Sepolia",g:"Krijo një token dhe nise projektin final.",w:1,need:["MetaMask me Sepolia dhe ETH testimi","Remix IDE"],
-steps:[["Krijo MyToken.sol","Ngjit kodin.",SOL+"import \"@openzeppelin/contracts/token/ERC20/ERC20.sol\";\n\ncontract MyToken is ERC20 {\n    constructor() ERC20(\"MyToken\", \"MTK\") {\n        _mint(msg.sender, 1000000 * 10 ** decimals());\n    }\n}"],["Provo në Remix VM","Kompilo dhe deploy fillimisht në Remix VM."],["Kalo në Sepolia","Environment: Injected Provider - MetaMask. Sigurohu që rrjeti është Sepolia."],["Deploy dhe konfirmo","Konfirmo në MetaMask dhe kopjo adresën e contract-it."],["Importo tokenin","MetaMask → Import tokens → ngjit adresën."],["Dërgo tokena te një koleg","Pastaj kontrollo transaksionin në sepolia.etherscan.io."],["Nis projektin final","Zgjidh idenë, krijo README me përshkrimin dhe plan për dy javët."]],
+steps:[["Krijo MyToken.sol","Ngjit kodin në file.",SOL+"import \"@openzeppelin/contracts/token/ERC20/ERC20.sol\";\n\ncontract MyToken is ERC20 {\n    constructor() ERC20(\"MyToken\", \"MTK\") {\n        _mint(msg.sender, 1000000 * 10 ** decimals());\n    }\n}"],["Provo në Remix VM","Kompilo dhe deploy fillimisht në Remix VM."],["Kalo në Sepolia","Environment: Injected Provider - MetaMask. Sigurohu që rrjeti është Sepolia."],["Deploy dhe konfirmo","Konfirmo në MetaMask dhe kopjo adresën e contract-it."],["Importo tokenin","MetaMask → Import tokens → ngjit adresën."],["Dërgo tokena te një koleg","Pastaj kontrollo transaksionin në sepolia.etherscan.io."],["Nis projektin final","Zgjidh idenë, krijo README me përshkrimin dhe plan për dy javët."]],
 res:"Tokeni shfaqet në MetaMask me saldo prej 1,000,000 MTK.",fail:["Import nuk gjendet: kontrollo që është adresa e contract-it, jo e llogarisë.","Deploy dështon: kontrollo që ke ETH testimi në Sepolia."]}
 ];
 const KEY="blockchain-labs-v2";let S={},tm;
 try{S=JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){S={}}
 for(const k of["c","k","d","t","u","q","a"])S[k]=S[k]||{};
 if(!S.os)S.os=/Mac|iPhone|iPad/.test(navigator.platform||navigator.userAgent)?"mac":"win";if(!S.osSet)S.osSet=0;
-const logout=()=>{try{localStorage.removeItem(KEY)}catch(e){}S={c:{},k:{},d:{},t:{},u:{},q:{},a:{},os:S.os};render();menu()};
+const logout=()=>{try{localStorage.removeItem(KEY)}catch(e){}S={c:{},k:{},d:{},t:{},u:{},q:{},a:{},os:S.os};const nav=document.querySelector('nav');if(nav){nav.classList.remove('has-char');nav.style.removeProperty('--g')}render();menu()};
+
+async function verifyPin(pin){
+  if(!S.profile?.nickname)return false;
+  try{
+    const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:S.profile.nickname,pin:String(pin||'')})});
+    const data=await r.json();
+    if(!r.ok)return false;
+    if(data.token)S.tok=data.token;
+    return true;
+  }catch(e){return false}
+}
+function openProfileEdit(){
+  if(!S.profile)return;
+  const existing=document.querySelector('.edit-sheet');if(existing)existing.remove();
+  const sheet=$('div','edit-sheet');
+  const bg=$('div','sheet-bg');bg.onclick=()=>close();
+  const panel=$('div','sheet pin-required');
+  const close=()=>{sheet.classList.remove('open');setTimeout(()=>sheet.remove(),320)};
+  panel.append($('h3',0,'Customize profile'),$('p','sheet-hint','Për të ndryshuar emrin, mbiemrin ose karakterin, së pari konfirmo PIN-in tënd të hyrjes.'));
+  let unlocked=false,pick=S.av||0;
+  const pinGate=$('div','pin-gate');
+  const pinLab=$('label',0,'PIN (4 shifra)');
+  const pinInp=$('input');pinInp.type='password';pinInp.inputMode='numeric';pinInp.maxLength=4;pinInp.autocomplete='current-password';pinInp.placeholder='••••';
+  pinLab.append(pinInp);pinGate.append(pinLab);
+  const unlockBtn=$('button','sheet-save','Hap editimin');
+  const pinErr=$('p','fail');
+  unlockBtn.onclick=async()=>{
+    unlockBtn.disabled=true;unlockBtn.textContent='Duke verifikuar…';pinErr.textContent='';
+    const ok=await verifyPin(pinInp.value);
+    if(!ok){pinErr.textContent='PIN i gabuar. Provo përsëri.';unlockBtn.disabled=false;unlockBtn.textContent='Hap editimin';return}
+    unlocked=true;panel.classList.remove('pin-required');pinGate.remove();buildForm();
+  };
+  pinInp.addEventListener('keydown',ev=>{if(ev.key==='Enter'){ev.preventDefault();unlockBtn.click()}});
+  pinGate.append(unlockBtn,pinErr);
+  panel.append(pinGate);
+  const buildForm=()=>{
+    const form=$('div');
+    const firstLab=$('label',0,'Emri'),first=$('input');first.value=(S.profile.fullName||'').split(' ')[0]||'';firstLab.append(first);
+    const lastLab=$('label',0,'Mbiemri'),last=$('input');last.value=(S.profile.fullName||'').split(' ').slice(1).join(' ')||'';lastLab.append(last);
+    const nickLab=$('label',0,'Pseudonimi (nuk ndryshohet)'),nick=$('input');nick.value=S.profile.nickname||'';nick.disabled=true;nickLab.append(nick);
+    form.append(firstLab,lastLab,nickLab,$('label',0,'Karakteri'),avPicker(v=>{pick=v},pick));
+    const err=$('p','fail');
+    const actions=$('div','sheet-actions');
+    const saveBtn=$('button','sheet-save','Ruaj ndryshimet');
+    const cancelBtn=$('button','sheet-cancel','Anulo');cancelBtn.onclick=close;
+    saveBtn.onclick=async()=>{
+      const f=first.value.trim(),l=last.value.trim();
+      if(!f||!l){err.textContent='Emri dhe mbiemri janë të detyrueshëm.';return}
+      saveBtn.disabled=true;saveBtn.textContent='Duke ruajtur…';
+      S.profile.fullName=f+' '+l;S.av=pick;save();
+      // try server update (optional – does not break if missing)
+      try{
+        await fetch('/api/profile/'+encodeURIComponent(S.profile.nickname),{method:'PUT',headers:{'Content-Type':'application/json','x-token':S.tok||''},body:JSON.stringify({fullName:S.profile.fullName,av:pick})});
+      }catch(e){}
+      me();render();close();
+    };
+    actions.append(saveBtn,cancelBtn);form.append(err,actions);panel.append(form);first.focus();
+  };
+  sheet.append(bg,panel);document.body.append(sheet);
+  requestAnimationFrame(()=>sheet.classList.add('open'));
+  pinInp.focus();
+}
+
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){};const profile=S.profile,tok=S.tok||'',snapshot=JSON.stringify({state:{...S}});if(profile?.nickname){window.__dbQueue=(window.__dbQueue||Promise.resolve()).then(()=>fetch('/api/progress/'+encodeURIComponent(profile.nickname),{method:'PUT',headers:{'Content-Type':'application/json','x-token':tok},body:snapshot}).then(r=>{if(r.status===401&&S.tok===tok)logout()})).catch(()=>{})}};
 const $=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
 const mac=()=>S.os==="mac";
@@ -64,31 +127,37 @@ const fmt=s=>Math.floor(s/60)+":"+String(s%60).padStart(2,"0");
 const isOpen=i=>i===0||!!S.d[LABS[i-1].id]||!!S.u[LABS[i].id];
 const curIdx=()=>Math.max(0,LABS.findIndex(l=>l.id===location.hash.slice(1)));
 function finish(l){const st=S.t[l.id],secs=st?Math.floor((Date.now()-st)/1000):0,lim=l.m*60;const bonus=!st?0:secs<=lim?10:secs<=lim*1.5?5:0;S.d[l.id]={xp:l.x+bonus,s:secs};delete S.t[l.id];save();render();const q=document.getElementById('quiz');if(q)q.scrollIntoView({behavior:'smooth',block:'center'});else scrollTo({top:0,behavior:'smooth'})}
- function playground(l,m){if(l.id!=='lab-6')return;const box=$('section','pg');box.append($('h3',0,'Laboratori interaktiv · provo para se ta shkruash në Python'));
-const sec=t=>{const d=document.createElement('details');d.append($('summary',0,t));box.append(d);return d},inp=v=>{const i=$('input');i.value=v;return i},out=()=>$('pre','pgout');
-{const d=sec('1 · Hash live dhe efekti i ortekut'),a=inp('Blockchain'),b=inp('blockchain'),ha=out(),hb=out(),df=$('p');d.append(a,ha,b,hb,df);
- const up=async()=>{const x=await sha(a.value),y=await sha(b.value);ha.textContent=x;hb.textContent=y;let n=0;for(let i=0;i<64;i++){let v=parseInt(x[i],16)^parseInt(y[i],16);while(v){n+=v&1;v>>=1}}df.textContent='Biti të ndryshëm: '+n+' nga 256 (pritet rreth gjysma)'};a.oninput=b.oninput=up;up()}
-{const d=sec('2 · Mining: gjej nonce'),t=inp('blockchain'),s=$('select');[1,2,3,4].forEach(n=>s.append(new Option(n+' zero në fillim',n)));s.value='3';const go=$('button',0,'Nis mining'),o=out();d.append(t,s,go,o);
- go.onclick=async()=>{go.disabled=true;const z='0'.repeat(+s.value),t0=performance.now();let n=0,h='';for(;;n++){h=await sha(t.value+n);if(h.startsWith(z))break;if(n%2000===0){o.textContent='Duke provuar… '+n;await new Promise(r=>setTimeout(r))}}o.textContent='nonce = '+n+'\nhash  = '+h+'\nprovime: '+(n+1)+' · '+Math.round(performance.now()-t0)+' ms';go.disabled=false}}
-{const d=sec('3 · Merkle tree: ndrysho një transaksion'),tx=['Tx1','Tx2','Tx3','Tx4'].map(inp),o=out();tx.forEach(i=>d.append(i));d.append(o);let base=null;
- const up=async()=>{const h=await Promise.all(tx.map(i=>sha(i.value))),a=await sha(h[0]+h[1]),b=await sha(h[2]+h[3]),r=await sha(a+b),cur=[...h,a,b,r];if(!base)base=cur;const nm=['H1','H2','H3','H4','H12','H34','Root'];o.textContent='';cur.forEach((x,i)=>o.append($('span',x===base[i]?'good':'bad',nm[i]+' = '+x.slice(0,16)+'…\n')))};tx.forEach(i=>i.oninput=up);up()}
+function playground(l,m){if(l.id!=='lab-6')return;const box=$('section','pg');box.append($('h3',0,'Laboratori interaktiv · provo para se ta shkruash në Python'));
+const sec=t=>{const d=document.createElement('details');d.append($('summary',0,t));box.append(d);return d},inp=v=>{const i=$('input');i.value=v;return i},out=()=>$('pre','pgout'),pulse=el=>{el.classList.remove('pg-updated');void el.offsetWidth;el.classList.add('pg-updated')};
+{const d=sec('1 · Hash live dhe efekti i ortekut'),a=inp('Blockchain'),b=inp('blockchain'),ha=out(),hb=out(),df=$('p','pg-bits');ha.classList.add('pg-hash');hb.classList.add('pg-hash');d.append(a,ha,b,hb,df);let revision=0;
+ const up=async()=>{const id=++revision,[x,y]=await Promise.all([sha(a.value),sha(b.value)]);if(id!==revision)return;ha.textContent=x;hb.textContent=y;let n=0;for(let i=0;i<64;i++){let v=parseInt(x[i],16)^parseInt(y[i],16);while(v){n+=v&1;v>>=1}}df.textContent='Biti të ndryshëm: '+n+' nga 256 (pritet rreth gjysma)';[ha,hb,df].forEach(pulse)};a.oninput=b.oninput=up;up()}
+{const d=sec('2 · Mining: gjej nonce'),t=inp('blockchain'),s=$('select');[1,2,3,4].forEach(n=>s.append(new Option(n+' zero në fillim',n)));s.value='3';const go=$('button',0,'Nis mining'),progress=$('div','mine-progress'),status=$('p','mine-status','Gati për kërkim.'),o=out();progress.append($('i'));status.setAttribute('aria-live','polite');d.append(t,s,go,progress,status,o);
+ go.onclick=async()=>{go.disabled=true;go.textContent='Duke kërkuar…';d.classList.add('mining');d.classList.remove('mined');const z='0'.repeat(+s.value),t0=performance.now();let n=0,h='';try{for(;;n++){h=await sha(t.value+n);if(h.startsWith(z))break;if(n%512===0){status.textContent='Duke provuar nonce '+n+'…';await new Promise(r=>setTimeout(r))}}o.textContent='nonce = '+n+'\nhash  = '+h+'\nprovime: '+(n+1)+' · '+Math.round(performance.now()-t0)+' ms';status.textContent='Nonce u gjet · '+(n+1)+' prova.';d.classList.add('mined');pulse(o)}catch(e){status.textContent='Gabim gjatë mining: '+e.message;throw e}finally{go.disabled=false;go.textContent='Nis mining';d.classList.remove('mining')}}}
+{const d=sec('3 · Merkle tree: ndrysho një transaksion'),tx=['Tx1','Tx2','Tx3','Tx4'].map(inp),tree=$('div','merkle-tree'),names=['H1','H2','H3','H4','H12','H34','Root'],nodes=names.map(()=> $('div','merkle-node')),hashes=nodes.map(()=> $('code','merkle-hash'));tx.forEach(i=>d.append(i));for(let start=0,size=4;size>0;start+=size,size=Math.floor(size/2)){const row=$('div','merkle-row');nodes.slice(start,start+size).forEach((node,i)=>{const index=start+i;node.append($('b',0,names[index]),hashes[index]);row.append(node)});tree.append(row)}d.append(tree);tree.setAttribute('aria-live','polite');let base=null,previous=[],revision=0;
+ nodes[6].setAttribute('aria-live','polite');const up=async()=>{const id=++revision,h=await Promise.all(tx.map(i=>sha(i.value))),a=await sha(h[0]+h[1]),b=await sha(h[2]+h[3]),r=await sha(a+b),cur=[...h,a,b,r];if(id!==revision)return;if(!base)base=cur;cur.forEach((x,i)=>{nodes[i].classList.toggle('good',x===base[i]);nodes[i].classList.toggle('bad',x!==base[i]);hashes[i].textContent=x.slice(0,16)+'…';nodes[i].title=x;if(x!==previous[i])pulse(nodes[i])});previous=cur};tx.forEach(i=>i.oninput=up);up()}
 m.append(box)}
-function popXP(txt,el){const pop=$('div','xp-pop',txt);const r=el?el.getBoundingClientRect():{left:innerWidth-80,top:90,width:0};pop.style.left=(r.left+r.width/2+scrollX)+'px';pop.style.top=(r.top+scrollY-44)+'px';document.body.append(pop);setTimeout(()=>pop.remove(),1700)}
-let fx2={};
+function popXP(txt,el){const pop=$('div','xp-pop',txt);if(txt==='mos…')pop.classList.add('mos-pop');const r=el?el.getBoundingClientRect():{left:innerWidth-80,top:90,width:0};pop.style.left=(r.left+r.width/2+scrollX)+'px';pop.style.top=(r.top+scrollY-44)+'px';document.body.append(pop);setTimeout(()=>pop.remove(),1700)}
+let fx2={},companionMood='neutral',companionLab='',companionSpeechTimer,companionTeasing=false,companionCurrentStep=-1,companionUser=S.profile?.nickname||'',companionKnownDone=new Set(Object.keys(S.c||{})),companionKnownSkips=new Set(Object.keys(S.k||{}));
 // Classroom app refinements: profile gate, guided steps, help cards and stable challenge placement.
 const AV=[{n:'Bloku',c:'#14b8a6',b:'<rect x="10" y="12" width="44" height="44" rx="8"/>'},{n:'Hashi',c:'#a855f7',b:'<circle cx="32" cy="34" r="22"/>'},{n:'Nonce',c:'#f59e0b',b:'<polygon points="32,6 58,34 32,60 6,34"/>'},{n:'Minatori',c:'#ef4444',b:'<path d="M12 56V28Q12 8 32 8T52 28V56Z"/>'},{n:'Nyja',c:'#3b82f6',b:'<polygon points="32,6 55,19 55,45 32,58 9,45 9,19"/>'},{n:'Wallet',c:'#22c55e',b:'<rect x="8" y="16" width="48" height="38" rx="12"/>'}];
 const LV=[0,25,60,100,150,200],TIT=['Fillestar','Eksplorues','Ndërtues','Zhvillues','Arkitekt','Legjendë'],TOT=LABS.reduce((a,l)=>a+l.steps.length,0);
 const avEl=(i,lv,cb)=>{const a=document.createElement('button');a.type='button';a.className='avw a'+i;a.style.setProperty('--g',AV[i].c);a.style.setProperty('--lv',lv);a.setAttribute('aria-label','Karakteri '+AV[i].n);a.innerHTML='<svg viewBox="0 0 64 64" aria-hidden="true"><g fill="'+AV[i].c+'">'+AV[i].b+'</g><circle class="eye" cx="24" cy="32" r="3.5" fill="#0f172a"/><circle class="eye" cx="40" cy="32" r="3.5" fill="#0f172a"/><path d="M24 42Q32 49 40 42" stroke="#0f172a" fill="none" stroke-width="3" stroke-linecap="round"/></svg>';if(cb)a.onclick=cb;return a};
 function avPicker(cb,cur){const d=$('div','pick');AV.forEach((x,i)=>{const b=avEl(i,2,()=>{d.querySelectorAll('.avw').forEach(y=>y.classList.remove('on'));b.classList.add('on');cb(i)});b.title=x.n;if(i===cur)b.classList.add('on');d.append(b)});return d}
+function companionMessage(mood,l,stepIndex){const full=(S.profile?.fullName||'').trim(),name=full.split(/\s+/)[0]||S.profile?.nickname||'mik',nick=S.profile?.nickname?'@'+S.profile.nickname:name,step=stepIndex>=0&&stepIndex<l.steps.length?'Hapi '+(stepIndex+1)+'/'+l.steps.length+': '+l.steps[stepIndex][0]:'sfidën përfundimtare',lines={neutral:['Hajde, '+name+'! Tani: '+step+'.','Po të ndjek, '+nick+' — '+step+'.','Gati për "'+step+'", '+name+'?'],happy:['Bravo, '+name+'! Hapi u zgjidh — tani '+step+'.','Shkëlqyeshëm, '+nick+'!','Bllok i zgjidhur — vazhdo kështu, '+name+'!'],sad:['S’ka gjë, '+name+'. Provojmë '+step+'.','Jam me ty, '+nick+' — vazhdojmë bashkë.','Mos u mërzit, '+name+'! Hapi tjetër po pret.']};const choices=lines[mood]||lines.neutral;return choices[Math.floor(Math.random()*choices.length)]}
+function companionWidget(l,stepIndex){companionCurrentStep=stepIndex;companionTeasing=false;const mood=companionLab===l.id?companionMood:'neutral',wrap=$('div','companion mood-'+mood),avatar=avEl(S.av||0,2),speech=$('span','companion-speech',companionMessage(mood,l,stepIndex));wrap.style.setProperty('--g',AV[S.av||0].c);avatar.classList.add('companion-avatar');avatar.tabIndex=-1;avatar.setAttribute('aria-hidden','true');avatar.style.cursor='default';const mouth=avatar.querySelector('svg').lastElementChild;if(mood==='sad')mouth.setAttribute('d','M24 47Q32 38 40 47');else if(mood==='neutral')mouth.setAttribute('d','M25 44H39');speech.setAttribute('aria-live','polite');wrap.append(avatar,speech);companionSpeechTimer=setInterval(()=>{if(!speech.isConnected){clearInterval(companionSpeechTimer);return}if(companionTeasing)return;speech.textContent=companionMessage(companionMood,l,stepIndex);speech.classList.remove('say-pop');void speech.offsetWidth;speech.classList.add('say-pop')},9000+Math.random()*4000);return wrap}
+function teaseCompanion(help){const speech=document.querySelector('.companion-speech');if(!speech)return;const name=(S.profile?.fullName||S.profile?.nickname||'mik').trim().split(/\s+/)[0],step=help.closest('.step')?.querySelector('h3')?.textContent||'këtë hap',lines=['Psst, '+name+'… provoje vetë para se të kërkosh ndihmë 😉','E gjete ndihmën sekrete për "'+step+'", '+name+'?','Mos u dorëzo, '+name+' — provoje edhe një herë!'];companionTeasing=true;document.querySelector('.companion')?.classList.add('teasing');speech.textContent=lines[Math.floor(Math.random()*lines.length)]}
+function calmCompanion(){if(!companionTeasing)return;companionTeasing=false;document.querySelector('.companion')?.classList.remove('teasing');const l=LABS[curIdx()],speech=document.querySelector('.companion-speech');if(l&&speech)speech.textContent=companionMessage(companionMood,l,companionCurrentStep)}
+const mainEl=document.getElementById('main');mainEl.addEventListener('mouseover',ev=>{const help=ev.target.closest?.('.help');if(help&&!help.contains(ev.relatedTarget))teaseCompanion(help)});mainEl.addEventListener('mouseout',ev=>{const help=ev.target.closest?.('.help');if(help&&!help.contains(ev.relatedTarget))calmCompanion()});mainEl.addEventListener('focusin',ev=>{const help=ev.target.closest?.('.help');if(help)teaseCompanion(help)});mainEl.addEventListener('focusout',ev=>{const help=ev.target.closest?.('.help');if(help&&!help.contains(ev.relatedTarget))calmCompanion()});
+document.getElementById('main').addEventListener('click',ev=>{const answer=ev.target.closest('.challenge button');if(!answer)return;const quiz=answer.closest('.challenge');setTimeout(()=>{if(!quiz.isConnected)return;const lab=LABS[curIdx()];if(!lab)return;companionMood=quiz.querySelector('.feedback.ok')?'happy':'sad';companionLab=lab.id;const widget=document.querySelector('.companion');if(!widget)return;widget.classList.remove('mood-neutral','mood-happy','mood-sad');widget.classList.add('mood-'+companionMood);const mouth=widget.querySelector('.companion-avatar svg').lastElementChild;if(companionMood==='sad')mouth.setAttribute('d','M24 47Q32 38 40 47');else if(companionMood==='happy')mouth.setAttribute('d','M24 42Q32 49 40 42');else mouth.setAttribute('d','M25 44H39');const speech=widget.querySelector('.companion-speech');speech.textContent=companionMessage(companionMood,lab,-1)},0)},true);
 async function chainFill(el){let h=await sha(S.profile.nickname);el.textContent='';const add=(t,x)=>el.append($('span','blk',t+'\n'+x.slice(0,6)));add('Gen',h);for(const l of LABS)if(S.d[l.id]){h=await sha(h+l.id+S.d[l.id].xp);add('S'+l.s,h)}}
 function me(){const e=document.getElementById('me');e.textContent='';
- if(!S.profile){e.append($('b',0,'Profili i studentit'));e.append($('small','hint','Krijo profilin ose hyr me pseudonim dhe PIN.'));return}
+ if(!S.profile){e.append($('b',0,'Profili i studentit'));e.append($('small','hint','Krijo profilin ose hyr me pseudonim dhe PIN.'));const nav=document.querySelector('nav');if(nav){nav.classList.remove('has-char');nav.style.removeProperty('--g')}return}
  const i=S.av||0,n=S.profile.fullName.split(' ')[0],x=xp(),lv=LV.filter(t=>x>=t).length-1,done=Object.keys(S.c).length,pct=Math.round(100*done/TOT),sims=Object.values(S.q||{}).filter(v=>v>=3).length;
  e.style.setProperty('--g',AV[i].c);
  const pools=pct===0?['Lets go '+n+'!','Hajde nisim, '+n+'. Blloku i parë të pret!']:pct<25?['Keep it up '+n+'!','Is that all you got '+n+'?','Ngadalë po, por po ecën '+n+'.']:pct<50?['Po marrim formë '+n+'!','Mos u ndal '+n+', ritmi është i mirë.']:pct<75?['Gjysma e kaluar '+n+', respekt!','Tani po bëhesh serioz '+n+'!']:pct<100?['Pothuajse aty '+n+'!','Edhe pak '+n+', blloku i fundit!']:['Legjendë '+n+'! Kurs i përfunduar.'];
  const wrap=$('div','profile-card');
- const top=$('div','top'),pk=avPicker(v=>{S.av=v;save();me()},i),info=$('div');pk.hidden=true;
- const av=avEl(i,lv,()=>{pk.hidden=!pk.hidden});av.title='Ndërro karakterin';
+ const top=$('div','top'),info=$('div');
+ const av=avEl(i,lv);av.title=AV[i].n;av.style.cursor='default';
  info.append($('b',0,S.profile.fullName),$('br'),$('small',0,'@'+S.profile.nickname+' · '+TIT[lv]+' · '+x+' XP'),$('br'),$('small',0,Object.keys(S.d).length+'/'+LABS.length+' seanca · '+sims+'/3 sfida'));top.append(av,info);
  wrap.append(top);
  const bar=$('div','pbar'),fill=$('i');fill.style.width=pct+'%';bar.append(fill);bar.setAttribute('role','progressbar');bar.setAttribute('aria-valuenow',pct);
@@ -96,13 +165,18 @@ function me(){const e=document.getElementById('me');e.textContent='';
  const BD=[['Blloku i parë',done>=1],['Instaluesi',!!S.d['lab-2']],['Hash master',(S.q||{})['sim-lab-6']>=3],['Pa ndihmë',LABS.some(l=>S.d[l.id]&&!l.steps.some((_,j)=>(S.k||{})[l.id+'-'+j]))],['Shpejtësi',LABS.some(l=>S.d[l.id]&&S.d[l.id].xp>=l.x+10)],['Gjysma',pct>=50]];
  const bd=$('div','bdg');BD.forEach(b=>bd.append($('span',b[1]?'got':'',b[0])));
  const ch=$('div','chain');chainFill(ch);
+ const editBtn=$('button','edit-btn','Customize profile');editBtn.onclick=()=>openProfileEdit();
  const sw=$('button','logout-btn','Dil Nga Laboratorët');sw.onclick=()=>{save();setTimeout(logout,150)};
- wrap.append(pk,bar,say,bd,$('small','hint','Zinxhiri yt personal (hash i vërtetë për çdo seancë):'),ch,sw);e.append(wrap)}
+ wrap.append(bar,say,bd,$('small','hint','Zinxhiri yt personal (hash i vërtetë për çdo seancë):'),ch,editBtn,sw);e.append(wrap);
+ // apply character color to side nav + scrollbar
+ const nav=document.querySelector('nav');
+ if(nav){nav.style.setProperty('--g',AV[i].c);nav.classList.add('has-char')}
+}
 let QS=[];
 function extraQ(l,m){const qs=QS.filter(q=>q.lab===l.id);if(!qs.length)return;const box=$('section','pg');box.append($('h3',0,'Pyetje shtesë nga ligjëruesi'));if(!S.d[l.id]){box.append($('p',0,'Hapen kur të përfundosh seancën.'));m.append(box);return}
  qs.forEach(q=>{const c=$('div','box'),fb=$('small'),got=!!(S.a&&S.a[q.id]);c.append($('b',0,q.q),$('br'));if(got)fb.textContent='Saktë ✓ (+1 XP)';
   q.opts.map((o,i)=>({o,i})).sort(()=>Math.random()-.5).forEach(x=>{const b=$('button',0,x.o);b.disabled=got;b.onclick=()=>{if(x.i===0){S.a=S.a||{};S.a[q.id]=1;save();render();menu()}else fb.textContent='Jo ende, provo përsëri.'};c.append(b)});c.append($('br'),fb);box.append(c)});m.append(box)}
-function ask(title,msg,ok,danger){return new Promise(res=>{const d=document.createElement('dialog');d.className='dlg';const a=$('button',0,'Anulo'),b=$('button',danger?'danger':'ok',ok),row=$('div','row');row.append(a,b);d.append($('h3',0,title),$('p',0,msg),row);document.body.append(d);const end=v=>{d.close&&d.close();d.remove();res(v)};a.onclick=()=>end(false);b.onclick=()=>end(true);d.addEventListener('cancel',ev=>{ev.preventDefault();end(false)});d.showModal?d.showModal():d.setAttribute('open','');a.focus()})}
+function ask(title,msg,ok,danger,emoji){return new Promise(res=>{const d=document.createElement('dialog');d.className='dlg'+(danger?' dlg-danger':'');if(emoji){const em=$('div','dlg-emoji',emoji);d.append(em)}d.append($('h3',0,title),$('p',0,msg));const a=$('button','cancel-btn','Anulo'),b=$('button',danger?'danger':'ok',ok),row=$('div','row');row.append(a,b);d.append(row);document.body.append(d);const end=v=>{try{d.close()}catch(e){}d.remove();res(v)};a.onclick=()=>end(false);b.onclick=()=>end(true);d.addEventListener('cancel',ev=>{ev.preventDefault();end(false)});d.showModal?d.showModal():d.setAttribute('open','');a.focus()})}
 function menu(){const cur=LABS[curIdx()].id,m=document.getElementById('menu');m.textContent='';if(!S.profile)return;LABS.forEach((l,i)=>{const a=$('a');a.href='#'+l.id;if(l.id===cur)a.setAttribute('aria-current','page');a.append(l.t);a.append($('small',0,'Seanca '+l.s+' · '+(S.d[l.id]?'përfunduar':isOpen(i)?cnt(l)+'/'+l.steps.length+' hapa':'mbyllur')));const b=$('div','bar'),p=$('i');p.style.width=(S.d[l.id]?100:100*cnt(l)/l.steps.length)+'%';b.append(p);a.append(b);m.append(a)});me()}
 function stepHelp(l,i){const key=l.id+':'+i;const tips={
 'lab-2:0':'Hape code.visualstudio.com, shkarko instaluesin për sistemin tënd dhe prano opsionet e parazgjedhura. Pas instalimit hape VS Code nga Start ose Applications.',
@@ -111,7 +185,7 @@ function stepHelp(l,i){const key=l.id+':'+i;const tips={
 'lab-2:3':'Gjatë instalimit në Windows shëno “Add Python to PATH”. Në Mac përdor python3 --version. Nëse komanda nuk njihet, hape terminal të ri.',
 'lab-2:4':'Instalo MetaMask vetëm nga metamask.io ose dyqani zyrtar i shfletuesit. Për laborator përdor wallet testimi. Shkruaj seed phrase vetëm offline; mos e dërgo askund dhe mos e vendos në këtë faqe.',
 'lab-2:5':'Remix hapet në shfletues. Nuk kërkon instalim. Për hapat e parë, përdor Remix VM; ai krijon blockchain testues brenda faqes.',
-'lab-6:0':'Krijo skedarin hash.py në VS Code, ngjit kodin dhe ekzekuto në terminalin e VS Code. Nëse python nuk njihet, provo python3.',
+'lab-6:0':'Krijo skedarin hash.py në VS Code, ngjit kodin në file dhe ekzekuto në terminalin e VS Code. Nëse python nuk njihet, provo python3.',
 'lab-8:0':'Testnet4 është rrjeti aktual i testimit për Bitcoin; testnet3 është i vjetruar. Pyet ligjëruesin cilin wallet dhe faucet përdorim.',
 'lab-8:2':'Faucet-et e testnet-it shpesh bien ose kanë limit. Nëse njëri nuk punon, provo një tjetër ose pyet ligjëruesin; mos paguaj kurrë për coin testimi.',
 'lab-10:0':'Në MetaMask hap menynë Networks dhe aktivizo “Show test networks”, pastaj zgjidh Sepolia. Mos shto rrjet me të dhëna të rastësishme.',
@@ -149,9 +223,9 @@ tNew.onclick=showNew;tLog.onclick=showLog;m.append(card);showNew();me();return}
   timer.append(start);
  } else if(S.t[l.id]&&!S.d[l.id]){
   // restart timer option with warning
-  const restart=$('button',0,'Rifillo kohëmatësin');
+  const restart=$('button','timer-restart','Rifillo kohëmatësin');
   restart.onclick=async()=>{
-   if(!await ask('Rifillo kohëmatësin?','Nëse rifillon, koha aktuale fshihet dhe mund të humbasësh bonusin e XP për këtë seancë. Je i sigurt?','Po, rifillo',1))return;
+   if(!await ask('Rifillo kohëmatësin?','Nëse rifillon, koha aktuale fshihet dhe mund të humbasësh bonusin e XP për këtë seancë. Je i sigurt?','Po, rifillo',1,'⏱️'))return;
    S.t[l.id]=Date.now();save();render();
   };
   if(cnt(l)===0)timer.append(restart);
@@ -159,33 +233,42 @@ tNew.onclick=showNew;tLog.onclick=showLog;m.append(card);showNew();me();return}
  } else if(!S.d[l.id]) tm=setInterval(tick,1000);
  m.append(timer);tick();
  }
+ const activeStep=l.steps.findIndex((_,i)=>!S.c[l.id+'-'+i]);
+ m.append(companionWidget(l,activeStep));
  l.steps.forEach((s,i)=>{const k=l.id+'-'+i,done=!!S.c[k],prior=i===0||!!S.c[l.id+'-'+(i-1)],locked=!done&&(!S.t[l.id]||!prior);const row=$('section','step'+(done?' done':'')+(locked?' locked'+(S.t[l.id]?'':' need-timer'):'')+(fx2.done===k?' just-done':'')+(!locked&&!done&&fx2.unlock===k?' just-unlocked':''));const body=$('div','step-body');body.append($('h3',0,(i+1)+'. '+s[0]),$('p',0,fx(s[1])));if(s[2]){const code=fx(s[2]),pre=$('pre'),copy=$('button',0,'Kopjo kodin');copy.onclick=async()=>{try{await navigator.clipboard.writeText(code);copy.textContent='U kopjua'}catch{copy.textContent='Zgjidhe dhe kopjoje'}};pre.append(copy,document.createTextNode(code));body.append(pre)}const help=document.createElement('details');help.className='help';help.append($('summary',0,'Ke nevojë për ndihmë të fshehtë?'),$('p',0,stepHelp(l,i)));body.append(help);if(s[3]){const sol=document.createElement('details');sol.className='help';sol.append($('summary',0,'Trego zgjidhjen'),$('pre',0,s[3]));body.append(sol)}const actions=$('div','step-actions'),btn=$('button','done-btn',done?'U krye ✓':'Shëno si të kryer');btn.disabled=locked||done;btn.onclick=()=>{if(locked||done)return;S.c[k]=1;save();popXP('+2 XP',btn);fx2={done:k,unlock:l.id+'-'+(i+1)};if(cnt(l)===l.steps.length&&!S.d[l.id]){fx2.quiz=1;finish(l)}else render();menu()};actions.append(btn);if(!done){const sk=$('button','skip-btn','Kam problem · kalo');let skipTries=0;
  sk.onmouseenter=()=>{
-  if(skipTries===0){skipTries=1;sk.classList.add('flee');setTimeout(()=>{sk.classList.remove('flee');sk.style.transform='';},900);return}
+  if(skipTries===0){skipTries=1;const help=body.querySelector('.help'),helpRect=help.getBoundingClientRect(),skipRect=sk.getBoundingClientRect();sk.style.setProperty('--skip-shift',Math.max(0,helpRect.right-skipRect.right)+'px');sk.classList.add('flee');setTimeout(()=>{sk.classList.remove('flee');sk.style.removeProperty('--skip-shift')},900);return}
   if(skipTries===1){skipTries=2;sk.classList.add('angry');popXP('mos…',sk);setTimeout(()=>{sk.classList.remove('angry');skipTries=0},1600)}
  };
  sk.onclick=async()=>{
   
-  if(!await ask('Të kalohet ky hap?','Hapi “'+s[0]+'” shënohet si i kaluar, nuk jep XP dhe ligjëruesi e sheh që ke pasur problem.','Kalo hapin'))return;
+  if(!await ask('Të kalohet ky hap?','Hapi “'+s[0]+'” shënohet si i kaluar, nuk jep XP dhe ligjëruesi e sheh që ke pasur problem.','Kalo hapin',0,'😔'))return;
   S.c[k]=1;S.k=S.k||{};S.k[k]=1;save();
   // notify server/admin of skip (already in S.k payload)
   fx2={done:k};if(cnt(l)===l.steps.length&&!S.d[l.id])finish(l);else render();menu()
  };actions.append(sk)}body.append(actions);row.append(body);m.append(row)});
- playground(l,m);simulator(l,m);extraQ(l,m);const result=$('div','box res');result.append($('b',0,'Rezultati i pritur'),$('span',0,l.res));m.append(result);const fail=$('div','box fail');fail.append($('b',0,'Çka mund të dështojë'));const fu=$('ul');l.fail.forEach(x=>fu.append($('li',0,x)));fail.append(fu);m.append(fail);const tools=$('div','tools');const reset=$('button',0,'Fshi përparimin e kësaj seance');reset.onclick=async()=>{if(!await ask('Të fshihet përparimi i kësaj seance?','Do të fshihen '+cnt(l)+' hapa të kryer, kohëmatësi dhe '+(S.d[l.id]?S.d[l.id].xp:0)+' XP të seancës “'+l.t+'”. Kjo nuk kthehet mbrapsht. Seancat e tjera nuk preken.','Po, fshije',1))return;l.steps.forEach((_,i)=>{delete S.c[l.id+'-'+i];if(S.k)delete S.k[l.id+'-'+i]});delete S.d[l.id];delete S.t[l.id];save();render()};tools.append(reset);m.append(tools);menu();
+ playground(l,m);simulator(l,m);extraQ(l,m);const result=$('div','box res');result.append($('b',0,'Rezultati i pritur'),$('span',0,l.res));m.append(result);const fail=$('div','box fail');fail.append($('b',0,'Çka mund të dështojë'));const fu=$('ul');l.fail.forEach(x=>fu.append($('li',0,x)));fail.append(fu);m.append(fail);const tools=$('div','tools');const reset=$('button',0,'Fshi përparimin e kësaj seance');reset.onclick=async()=>{if(!await ask('Të fshihet përparimi i kësaj seance?','Do të fshihen '+cnt(l)+' hapa të kryer, kohëmatësi dhe '+(S.d[l.id]?S.d[l.id].xp:0)+' XP të seancës “'+l.t+'”. Kjo nuk kthehet mbrapsht. Seancat e tjera nuk preken.','Po, fshije',1,'🗑️'))return;l.steps.forEach((_,i)=>{delete S.c[l.id+'-'+i];if(S.k)delete S.k[l.id+'-'+i]});delete S.d[l.id];delete S.t[l.id];save();render()};tools.append(reset);m.append(tools);menu();
 }
-const _render=render;render=function(){_render();fx2={}};
+const _render=render;render=function(){const lab=LABS[curIdx()],user=S.profile?.nickname||'';clearInterval(companionSpeechTimer);if(user!==companionUser){companionUser=user;companionKnownDone=new Set(Object.keys(S.c||{}));companionKnownSkips=new Set(Object.keys(S.k||{}));companionMood='neutral';companionLab=''}else{for(const key of companionKnownDone)if(!(S.c||{})[key])companionKnownDone.delete(key);for(const key of companionKnownSkips)if(!(S.k||{})[key])companionKnownSkips.delete(key);const doneNow=Object.keys(S.c||{}),skipsNow=Object.keys(S.k||{}),newDone=doneNow.filter(key=>!companionKnownDone.has(key)),newSkips=skipsNow.filter(key=>!companionKnownSkips.has(key));doneNow.forEach(key=>companionKnownDone.add(key));skipsNow.forEach(key=>companionKnownSkips.add(key));if(lab&&newSkips.length){companionMood='sad';companionLab=lab.id}else if(lab&&newDone.length){companionMood='happy';companionLab=lab.id}if(companionLab&&lab&&companionLab!==lab.id)companionMood='neutral'}_render();fx2={};document.body.classList.toggle('guest-view',!S.profile)};
 function enter(){const m=document.getElementById('main');m.classList.remove('enter');void m.offsetWidth;m.classList.add('enter');setTimeout(()=>m.classList.remove('enter'),900)}
 async function sync(){if(!S.profile)return;try{const r=await fetch('/api/profile/'+encodeURIComponent(S.profile.nickname),{headers:{'x-token':S.tok||''}});if(r.status===401)return logout();if(!r.ok)return;const j=await r.json(),u=j.unlocked||{},qs=j.questions||[];if(JSON.stringify(u)!==JSON.stringify(S.u)||JSON.stringify(qs)!==JSON.stringify(QS)){S.u=u;QS=qs;try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}render();menu()}}catch(e){}}
 setInterval(sync,15000);sync();
 addEventListener("hashchange",()=>{render();enter();scrollTo(0,0)});render();enter();
 </script>
 <script>
-(()=>{const c=document.getElementById('bgfx'),x=c.getContext('2d'),R=matchMedia('(prefers-reduced-motion: reduce)').matches;const HUES=[175,200,260,30,140,320,45,190];let W,H,N=[],hue=175,th=175;
+(()=>{const c=document.getElementById('bgfx'),x=c.getContext('2d'),R=matchMedia('(prefers-reduced-motion: reduce)').matches;const HUES=[175,200,260,30,140,320,45,190],BLOCKS=[{color:'#14b8a6',face:'happy',phase:0},{color:'#8b5cf6',face:'sad',phase:1.6},{color:'#f59e0b',face:'excited',phase:3.2},{color:'#3b82f6',face:'neutral',phase:4.8}];let W,H,N=[],hue=175,th=175;
 function size(){const d=devicePixelRatio||1;W=innerWidth;H=innerHeight;c.width=W*d;c.height=H*d;x.setTransform(d,0,0,d,0,0);const n=Math.round(Math.min(60,W*H/26000));N=Array.from({length:n},()=>({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.25,vy:(Math.random()-.5)*.25,s:6+Math.random()*8,r:Math.random()*6}))}
 function sess(){const m=(location.hash||'').match(/(\d+)/);let i=0;try{i=typeof curIdx==='function'?curIdx():0}catch(e){}th=HUES[i%HUES.length]}
+function drawBlocks(){if(!document.body.classList.contains('guest-view'))return;const t=R?0:performance.now()/1000,s=Math.max(58,Math.min(88,Math.min(W,H)*.14)),cx=W/2,cy=H/2,ry=Math.max(0,Math.min(H*.3,H/2-s/2-20)),side=Math.max(s/2+18,Math.min(W*.14,W/2-s/2-14)),wiggle=Math.min(48,W*.045),tagWiggle=Math.max(0,Math.min(90,W*.1,W/2-side-s/2-2)),exchange=t*.3,tag=t*.34,tagGap=1.6+Math.sin(t*.2)*.25,points=[
+{x:side+Math.sin(exchange)*wiggle,y:cy+Math.cos(exchange)*ry},
+{x:side-Math.sin(exchange)*wiggle,y:cy-Math.cos(exchange)*ry},
+{x:W-side+Math.sin(tag)*tagWiggle,y:cy+Math.cos(tag)*ry*.86},
+{x:W-side+Math.sin(tag-tagGap)*tagWiggle,y:cy+Math.cos(tag-tagGap)*ry*.86}
+];x.save();x.globalAlpha=.17+Math.sin(t*2)*.035;x.strokeStyle='#94a3b8';x.lineWidth=2;x.setLineDash([6+Math.sin(t*3)*3,8]);x.beginPath();[[0,1],[2,3]].forEach(([a,b])=>{x.moveTo(points[a].x,points[a].y);x.lineTo(points[b].x,points[b].y)});x.stroke();x.restore();points.forEach((p,i)=>{const b=BLOCKS[i],r=s*.18,y=s*.1,bounce=R?1:1+Math.sin(t*2+b.phase)*.08;x.save();x.translate(p.x,p.y);x.rotate(R?0:Math.sin(t*.9+b.phase)*.05);x.scale(bounce,bounce);x.globalAlpha=.94;x.shadowColor=b.color;x.shadowBlur=20;x.fillStyle=b.color;x.fillRect(-s/2,-s/2,s,s);x.shadowBlur=0;x.strokeStyle='rgba(255,255,255,.95)';x.lineWidth=2;x.strokeRect(-s/2,-s/2,s,s);x.fillStyle='#0f172a';[-1,1].forEach(side=>{x.beginPath();x.arc(side*s*.18,-s*.13,s*.045,0,Math.PI*2);x.fill()});x.strokeStyle='#0f172a';x.lineWidth=Math.max(2,s*.045);x.lineCap='round';x.beginPath();if(b.face==='happy'){x.moveTo(-r,y);x.quadraticCurveTo(0,y+r*1.15,r,y)}else if(b.face==='sad'){x.moveTo(-r,y+r*.5);x.quadraticCurveTo(0,y-r*.6,r,y+r*.5)}else if(b.face==='excited'){x.ellipse(0,y+r*.35,r*.55,r*.7,0,0,Math.PI*2);x.fillStyle='#0f172a';x.fill()}else{x.moveTo(-r,y+r*.2);x.lineTo(r,y+r*.2)}if(b.face!=='excited')x.stroke();x.restore()})}
 function draw(){hue+=(th-hue)*.04;x.clearRect(0,0,W,H);const g=x.createRadialGradient(W*.8,H*.1,0,W*.8,H*.1,Math.max(W,H));g.addColorStop(0,`hsla(${hue},80%,55%,.14)`);g.addColorStop(1,'transparent');x.fillStyle=g;x.fillRect(0,0,W,H);
 for(let i=0;i<N.length;i++){const a=N[i];for(let j=i+1;j<N.length;j++){const b=N[j],dx=a.x-b.x,dy=a.y-b.y,d=Math.hypot(dx,dy);if(d<170){x.strokeStyle=`hsla(${hue},75%,60%,${(1-d/170)*.35})`;x.lineWidth=1;x.beginPath();x.moveTo(a.x,a.y);x.lineTo(b.x,b.y);x.stroke()}}}
 for(const a of N){x.save();x.translate(a.x,a.y);x.rotate(a.r);x.strokeStyle=`hsla(${hue},80%,65%,.7)`;x.fillStyle=`hsla(${hue},80%,55%,.12)`;x.lineWidth=1.2;x.beginPath();x.rect(-a.s/2,-a.s/2,a.s,a.s);x.fill();x.stroke();x.restore();if(!R){a.x+=a.vx;a.y+=a.vy;a.r+=.002;if(a.x<-20)a.x=W+20;if(a.x>W+20)a.x=-20;if(a.y<-20)a.y=H+20;if(a.y>H+20)a.y=-20}}
+drawBlocks();
 if(!R||Math.abs(th-hue)>.5)requestAnimationFrame(draw)}
 addEventListener('resize',()=>{size();if(R)draw()});addEventListener('hashchange',()=>{sess();if(R)requestAnimationFrame(draw)});size();sess();hue=th;draw()})();
 </script>
